@@ -109,6 +109,3 @@ function measure_spawn_at_on(f, proc, iters)
 	return latencies
 
 end
-
-function dummy()
-end

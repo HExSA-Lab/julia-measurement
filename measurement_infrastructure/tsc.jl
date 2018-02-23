@@ -4,3 +4,13 @@
 #
 #
 #
+
+
+function rdtsc()
+
+end
+
+
+function rdtscp()
+    ccall
+end

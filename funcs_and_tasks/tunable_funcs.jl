@@ -48,7 +48,7 @@ end
 # @exec_time: the time this worker function 
 #             will work (go to sleep)
 #
-function sleep_work (exec_time)
+function sleep_work(exec_time)
 
 	sleep(exec_time)
 
