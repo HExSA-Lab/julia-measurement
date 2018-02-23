@@ -10,7 +10,7 @@
 # @code_warntype below.
 #
 
-using StatsBase
+#using StatsBase
 
 
 #
