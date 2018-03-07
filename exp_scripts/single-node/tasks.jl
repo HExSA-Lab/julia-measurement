@@ -7,12 +7,13 @@
 #
 #
 function measure_task_create_tput(f, iters, throwout, creations)
-#array of task creations per second
+    # array of task creations per second
     tcps = Array{Float64}(iters)
 
     for i = 1:throwout
         s = time_ns()
         tsk = Task(f)
+        schedule(tsk)
         e = time_ns()
     end
 
@@ -20,6 +21,7 @@ function measure_task_create_tput(f, iters, throwout, creations)
         s = time_ns()
         for j = 1:creations
             tsk = Task(f)
+            schedule(tsk)
         end
         e = time_ns()
         tcps[i] = creations*1000000000 / ((e - s))
@@ -30,60 +32,67 @@ function measure_task_create_tput(f, iters, throwout, creations)
 end
 
 
-# TODO : Cannot figure out how to time this because task is not returning time calculated in function f
-function measure_task_create_lat(f, iters, throwout)
-#array of task creation latency
-    	tcl = Array{Float64}(iters)
-	for i = 1:throwout
-        	s = time_ns()
-		#println(1)
-        	tsk = Task(f) 		# end time is  not being returned by f , @time is also not giving back proper time 
-		println(tsk)
-		#tcl[i] = tsk - s
-		#println(3)
-	end                                                                                                                                        
+function ctx_switch_task()
 
-	tcl
-	println(tcl)
+    for i = 1:1000
+        yield()
+    end
 
 end
 
-function measure_task_switching(f, iters, throwout)
-#array of task switching latency
+
+function measure_task_switching(iters)
+
+    # array of task switching latency
 	tsl = Array{Float64}(iters)
+
 	# create two tasks
+	tsk1 = Task(ctx_switch_task)	
+	tsk2 = Task(ctx_switch_task)
 
-	tsk1  = Task(f)	
-	tsk2 = Task(f)
+	# schedule these tasks
 
-	#schedule these tasks
-
+    # warm up once
 	schedule(tsk1)
 	schedule(tsk2)
 
-	#switch tasks
+    while istaskdone(tsk1) == false && istaskdone(tsk2) == false
+        # wait on them to finish
+        yield()
+    end
 
-	for i = 1 :throwout 
-		s = time_ns()
-		println(1)
-		yieldto(tsk2)
-		e = time_ns()
-		yieldto(tsk1)
-	end
+	# the actual experiment
+
 	for i = 1 :iters 
+
+        tsk1 = Task(ctx_switch_task)	
+        tsk2 = Task(ctx_switch_task)
+
+        schedule(tsk1)
+        schedule(tsk2)
+
 		s = time_ns()
-		yieldto(tsk2)
-		e = time_ns()
-		yieldto(tsk1)
-		tsl[i] = e-s
+        
+        while istaskdone(tsk1) == false && istaskdone(tsk2) == false
+            # wait on them to finish
+            yield()
+        end
+
+        e = time_ns()
+
+        # time it took to yield 1000 times for each Task (total of 2000 yields())
+		tsl[i] = (e - s)/2000
+
 	end
 
 	tsl
-	println(tsl)
 
 end
 
 #TODO : Cannot figure out what condition to apply
+# the condition doesn't matter, the issue here is we need to
+# coordinate between the tasks using a shared variable. Still
+# figuring out how to do this
 function measure_notify_condition(f, cond , iters , throwout)
 	ncl  =Array{Float64}(iters)
 	#create tasks 
@@ -115,4 +124,4 @@ function measure_notify_condition(f, cond , iters , throwout)
 	println(ncl)
 end
 
-measure_notify_condition(dummy, fac(20), 10,10)
+#measure_notify_condition(dummy, fac(20), 10,10)
