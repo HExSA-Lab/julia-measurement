@@ -9,7 +9,7 @@
 function measure_relock_lock(iters, throwout)
 
     
-    lk = Base.Threads.ReursiveSpinlock()
+    lk = Base.Threads.ReentrantLock()
     lats = Array{Int64}(iters)
 
     for i=1:throwout
@@ -32,10 +32,10 @@ function measure_relock_lock(iters, throwout)
 
 end
 
-# TODO
+
 function measure_relock_trylock(iters, throwout)
     
-    lk = Base.Threads.RecursiveSpinLock()
+    lk = Base.Threads.ReentrantLock()
     lats = Array{Int64}(iters)
 
     for i=1:throwout
@@ -58,10 +58,10 @@ function measure_relock_trylock(iters, throwout)
 
 end
 
-# TODO
+
 function measure_relock_unlock(iters, throwout)
     
-    lk = Base.Threads.RecuursiveSpinLock()
+    lk = Base.Threads.ReentrantLock()
     lats = Array{Int64}(iters)
 
     for i=1:throwout
@@ -87,7 +87,6 @@ end
 
 # Mutexes
 
-# TODO
 function measure_mutex_lock(iters, throwout)
 
     
@@ -114,7 +113,7 @@ function measure_mutex_lock(iters, throwout)
 
 end
 
-# TODO
+
 function measure_mutex_trylock(iters, throwout)
     
     lk = Base.Threads.Mutex()
@@ -140,7 +139,7 @@ function measure_mutex_trylock(iters, throwout)
 
 end
 
-# TODO
+
 function measure_mutex_unlock(iters, throwout)
     
     lk = Base.Threads.Mutex()
@@ -165,6 +164,7 @@ function measure_mutex_unlock(iters, throwout)
     lats
 
 end
+
 
 function measure_spinlock_lock(iters, throwout)
     
@@ -244,17 +244,18 @@ end
 
 # Semaphores
 
-# TODO: 
 function measure_sem_acquire(size, iters, throwout)
 
 	sem = Base.Semaphore(size)
-    	lats = Array{Int64}(iters)
+    lats = Array{Int64}(iters)
+
 	for  i = 1:throwout
 		s = time_ns()
 		Base.acquire(sem)
 		e = time_ns()
 		Base.release(sem)
 	end
+
 	for  i = 1:iters
 		s = time_ns()
 		Base.acquire(sem)
@@ -262,20 +263,24 @@ function measure_sem_acquire(size, iters, throwout)
 		Base.release(sem)
 		lats[i] = e-s
 	end
+
 	lats
+
 end
 
-# TODO: 
+
 function measure_sem_release(iters, throwout)
 
 	sem = Base.Semaphore(size)
-    	lats = Array{Int64}(iters)
+    lats = Array{Int64}(iters)
+
 	for  i = 1:throwout
 		Base.acquire(sem)
 		s = time_ns()
 		Base.release(sem)
 		e = time_ns()
 	end
+
 	for  i = 1:iters
 		Base.acquire(sem)
 		s = time_ns()
@@ -283,6 +288,8 @@ function measure_sem_release(iters, throwout)
 		e = time_ns()
 		lats[i] = e-s
 	end
+
 	lats
+
 end
 
