@@ -65,7 +65,6 @@ function measure_pmap(iters, throwout, size, nprocs)
     addprocs(nprocs)
 
     a = [1:size]
-    y  = Int64
     times = Array{Int64}(iters)
 
     for i=1:throwout
