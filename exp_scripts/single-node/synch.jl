@@ -17,7 +17,6 @@ function measure_relock_lock(iters, throwout)
         Base.lock(lk)
         e = time_ns()
         Base.unlock(lk)
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -43,7 +42,6 @@ function measure_relock_trylock(iters, throwout)
         Base.trylock(lk)
         e = time_ns()
         Base.unlock(lk)
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -69,7 +67,6 @@ function measure_relock_unlock(iters, throwout)
         s = time_ns()
         Base.unlock(lk)
         e = time_ns()
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -98,7 +95,6 @@ function measure_mutex_lock(iters, throwout)
         Base.lock(lk)
         e = time_ns()
         Base.unlock(lk)
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -124,7 +120,6 @@ function measure_mutex_trylock(iters, throwout)
         Base.trylock(lk)
         e = time_ns()
         Base.unlock(lk)
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -150,7 +145,6 @@ function measure_mutex_unlock(iters, throwout)
         s = time_ns()
         Base.unlock(lk)
         e = time_ns()
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -176,7 +170,6 @@ function measure_spinlock_lock(iters, throwout)
         Base.lock(lk)
         e = time_ns()
         Base.unlock(lk)
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -201,7 +194,6 @@ function measure_spinlock_trylock(iters, throwout)
         Base.trylock(lk)
         e = time_ns()
         Base.unlock(lk)
-        lats[i] = e - s
     end
 
     for i=1:iters
@@ -226,7 +218,6 @@ function measure_spinlock_unlock(iters, throwout)
         s = time_ns()
         Base.unlock(lk)
         e = time_ns()
-        lats[i] = e - s
     end
 
     for i=1:iters

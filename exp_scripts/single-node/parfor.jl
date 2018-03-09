@@ -39,3 +39,51 @@ function measure_parfor(iters, throwout, size, nprocs)
     times
 
 end
+
+#
+# @parallel will take the jobs to be done and divy them up 
+# amongst available workers right away.
+# @parallel we get The specified range partitioned across all workers. 
+# pmap will start each worker on a job. 
+# Once a worker finishes with a job, it will give it the next available job. 
+# It is similar to queue based multiprocessing as is common in python. 
+# Thus pmap is  not so much a case of "redistributing" work 
+# but rather of only giving it out at the right time 
+# and to the right worker in the first place.
+#
+#
+
+function parallel_func(i)
+
+	a[i] = i
+ 
+
+end
+
+
+function measure_pmap_for(iters, throwout, size, nprocs)
+
+    addprocs(nprocs)
+
+    a = [1:size]
+    y  = Int64
+    times = Array{Int64}(iters)
+
+    for i=1:throwout
+        s = time_ns()
+        pmap(y -> y+1,a)
+        e = time_ns()
+    end
+
+    for i=1:iters
+        s = time_ns()
+        pmap(y -> y+1, a)
+        e = time_ns()
+        times[i] = e - s
+    end
+
+    rmprocs(workers())
+
+    times
+
+end
