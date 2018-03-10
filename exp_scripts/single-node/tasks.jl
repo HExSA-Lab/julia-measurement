@@ -93,9 +93,9 @@ end
 # the condition doesn't matter, the issue here is we need to
 # coordinate between the tasks using a shared variable. Still
 # figuring out how to do this
-function measure_notify_condition(f, cond , iters , throwout)
+function measure_notify_condition(iters)
 	ncl  =Array{Float64}(iters)
-	#create tasks 
+#= 	#create tasks 
 	
 	tsk1 = Task(f)
 
@@ -119,9 +119,22 @@ function measure_notify_condition(f, cond , iters , throwout)
 		e = time_ns()
 		ncl[i] = e-s
 	end
-	
+=#
+	c =  Condition() # what is he condition exactly
+	for i = 1:iters
+		@async begin
+			wait(c)
+			#notified
+		end
+		@async begin 
+			#do some work, what work though?
+			s = time_ns()
+			notify(c)
+			e = time_ns()	
+			ncl[i] = e- s 
+			#finished
+		end
+	end
 	ncl
-	println(ncl)
 end
 
-#measure_notify_condition(dummy, fac(20), 10,10)
