@@ -121,6 +121,20 @@ function measure_notify_condition(iters)
 	end
 =#
 	c =  Condition() # what is he condition exactly
+	for i = 1:throwout
+		@async begin
+			wait(c)
+			#notified
+		end
+		@async begin 
+			#do some work, what work though?
+			s = time_ns()
+			notify(c)
+			e = time_ns()	
+			ncl[i] = e- s 
+			#finished
+		end
+	end
 	for i = 1:iters
 		@async begin
 			wait(c)
