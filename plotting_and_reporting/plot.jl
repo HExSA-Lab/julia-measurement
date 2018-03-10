@@ -6,34 +6,22 @@
 #
 #
 using StatsBase
-#using GR
 using Distributions
-using StatPlots
-#using Plots
-#using Winston
 using Gadfly
-#gr()
 
-function box_from_2d_data(fn, pn)
 
-	lats = readdlm(fn, '\t' , UInt64 )
-    count  = size(lats)[1]
-    xlabels = Array{String}(count)
-	aoa = Any[] 
-        
-	for i = 0:count-1
-        
-		el  = 2^i
-        xlabels[i+1] = "$el"
-        
-	end
-	
-	for i = 1:count
-		push!(aoa, lats[i,:])
-    end
+#
+# Input data assumptions:
+# Row 1 is experiment labels
+# Each column has values for a single experiment. 
+# Row k contains trials k for all experiments
+#
+function box_from_2d_data(fn, pn, pw, ph, xlabel, ylabel)
 
-	p = boxplot!(xlabels, lats[1], ylabel="latency (ns)", xlabel="Process count", outliers=false, marker=(0.5, :blue, stroke(3)), key=false)
-	StatPlots.savefig(p, pn)
+    (a, b) = readdlm(fn, header=true)
+    p = Gadfly.plot(x = vec(b), y = transpose(a), Geom.boxplot, Guide.xlabel(xlabel), Guide.ylabel(ylabel))
+    Gadfly.draw(PDF(pn, pw, ph), p)
+
 end
 
 #
