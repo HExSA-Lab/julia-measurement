@@ -1,4 +1,8 @@
 # measure Base.Thread.Atomic functions 
+# TODO: Ideally we'd factor out a lot of this measurement code
+# but we need to be careful with (1) the different semantics among
+# the measured primitives and (2) proper timing placement, esp. if 
+# we're going to switch to RDTSC later on.
 
 #
 # measure Base.Thread.Atomic functions :  set 
@@ -6,8 +10,7 @@
 # @params
 # @throwout : number of iterations to throw out 
 # @iters : number of iterations 
-
-
+#
 function measure_atomic_set(iters, throwout)
     
     x = Base.Threads.Atomic{Int}(0)
@@ -32,6 +35,8 @@ function measure_atomic_set(iters, throwout)
     lats
 
 end
+
+
 #
 # measure Base.Thread.Atomic functions : compare and set 
 #
@@ -41,8 +46,7 @@ end
 # @def	:  initial value
 # @compare : value to compare with initial value
 # @set  : value to set if  @def equals @compare
-
-
+#
 function measure_atomic_cas(throwout, iters, def, compare, set)
 
 	macas =  Array{Int64}(iters)
