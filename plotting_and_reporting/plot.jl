@@ -6,57 +6,50 @@
 #
 #
 using StatsBase
-using GR
 using Distributions
-using StatPlots
-#using Plots
-#using Winston
 using Gadfly
-#gr()
 
-function box_from_2d_data(fn, pn)
 
-	lats = readdlm(fn, '\t' , UInt64 )
-    count  = size(lats)[1]
-    xlabels = Array{String}(count)
-	aoa = Any[] 
-        
-	for i = 0:count-1
-        
-		el  = 2^i
-        xlabels[i+1] = "$el"
-        
-	end
-	
-	for i = 1:count
-		push!(aoa, lats[i,:])
-    end
+#
+# Input data assumptions:
+# Row 1 is experiment labels
+# Each column has values for a single experiment. 
+# Row k contains trials k for all experiments
+#
+function box_from_2d_data(fn, pn, pw, ph, xlabel, ylabel)
 
-	p = boxplot!(xlabels, lats[1], ylabel="latency (ns)", xlabel="Process count", outliers=false, marker=(0.5, :blue, stroke(3)), key=false)
-	StatPlots.savefig(p, pn)
+    (a, b) = readdlm(fn, header=true)
+    p = Gadfly.plot(x = vec(b), y = transpose(a), Geom.boxplot, Guide.xlabel(xlabel), Guide.ylabel(ylabel))
+    Gadfly.draw(PDF(pn, pw, ph), p)
+
 end
 
-# assumed to be for the spawn experiments
-function line_from_2d_data(fn, pn, pw, ph, xlabel, ylabel)
+#
+# Row 1 is experiment labels
+# Each column has values for a single experiment. 
+# Row k contains trials k for all experiments
+#
+function line_wbars_from_2d_data(fn, pn, pw, ph, xlabel, ylabel)
 
-	lats = readdlm(fn)
-    count  = size(lats)[1]
-    xlabels = Array{String}(count)
-	aoa = Any[] 
-        
-	for i = 0:count-1
-        
-		el  = 2^i
-                xlabels[i+1] = "$el"
-        
-	end
-        
-	
-	for i = 1:count
-		push!(aoa, lats[i,:])
-    end
+    (a, b) = readdlm(fn, header=true)
+    ys = [mean(a[:, i]) for i=1:size(a, 2)]
+    stds = [std(a[:, i]) for i=1:size(a, 2)]
+    top_bars = ys .+ (stds / sqrt(length(ys)))
+    bot_bars = ys .- (stds / sqrt(length(ys)))
+
+    p = Gadfly.plot(x = vec(b), y = vec(ys), ymin=bot_bars, ymax=top_bars, Geom.line, Geom.errorbar, Guide.xlabel(xlabel), Guide.ylabel(ylabel))
+    Gadfly.draw(PDF(pn, pw, ph), p)
+end
+
+# 
+# Assumes 2 rows in data file. First is header values. Second is y values
+#
+function line_from_1d_data(fn, pn, pw, ph, xlabel, ylabel)
+
+	(yvals, xvals) = readdlm(fn, header=true)
     
-    p = Gadfly.plot(x = [0:count-1], y = lats[1], Guide.xlabel(xlabel), Guide.ylabel(ylabel), Geom.line, Guide.xticks(ticks=xlabels))
+    # Gadfly expects a column vector, hence the calls to vec()
+    Gadfly.plot(x = vec(xvals), y = vec(yvals), Guide.xlabel(xlabel), Guide.ylabel(ylabel), Geom.line)
     Gadfly.draw(PDF(pn, pw, ph), p)
     
 end
