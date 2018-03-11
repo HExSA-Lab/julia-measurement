@@ -94,110 +94,66 @@ end
 # coordinate between the tasks using a shared variable. Still
 # figuring out how to do this
 
-c = Condition()
-ch = Channel(4)
-function notify_workers()
-	notify(c)
-	s = time_ns()
-	put!(ch,s )
-	println("Notifying ..")
+
+addprocs(1)
+
+
+@everywhere mutable struct Condargs
+    wait_iters::Int
+    cvar::Condition
+    starttime::Int64
+    endtime::Int64
 end
-function am_i_notified()
+
+
+const work = RemoteChannel(()->Channel{Condargs}(1))
+const res = RemoteChannel(()->Channel{Int64}(1))
+
+@everywhere const cvar = Condition()
+
+@everywhere function waitonit(work, res, cond)
 	
-	wait(c) 	#unless notified task will be suspended and queued
-	e = time_ns()
-	println("Iam notified")
-	put!(ch,e)
+    println("waitonint starting")
+
+    cargs = take!(work)
+
+    println("started at ", cargs.starttime, " waiting on ", cargs.cvar)
+
+    for i=1:cargs.wait_iters
+        wait(cvar) 	
+        println("notified")
+        endtime = time_ns()
+        put!(res, endtime)
+    end
+
 end
+
 function measure_notify_condition(throwout, iters)
-	ncl  	  =Array{Float64}(iters)
-	tsk1 = Task(notify_workers) #fires the gun
-	tsk2 = Task(am_i_notified)  #sprints
 
-	for i = 1: throwout
-		schedule(tsk2)	# task 2 is waiting for the gun
-		if istaskdone(tsk2)== false
-			yield()
-		end
-		schedule(tsk1)	# task 1 fires gun - start time 
-			      	# task 1 will hear the bang and sprint 
-		s = take!(ch)	#start time stamp
-		e = take!(ch)   # end time stamp
-		ncl[i] = e-s
-	end
-	for i = 1: iters
-		schedule(tsk2)	# task 2 is waiting on condition c now 
-		schedule(tsk1)	# task 1 will notify task 2 - start time 
-			      	# task 1 will wake up and be queued
-		s = take!(ch)	#start time stamp
-		e = take!(ch)   # end time stamp
-		ncl[i] = e-s
-	end
-	
-	ncl
+    c = Condition()
+    cargs = Condargs(throwout, c, 0, 0)
+    println("running the remote do")
+
+    put!(work, cargs)
+    # run it on a different core
+    @async remote_do(waitonit, 2, work, res)
+    println("back from remote do")
+    
+    # remote proc is now waiting 
+
+    for i=1:throwout
+
+        s = time_ns()
+
+        notify(c)
+
+        e = take!(res)
+            
+        println("Got difference: ", e - s)
+        
+    end
+    
+    
 end
 
-#
-# measure Channels
-# time taken to put an object into a channel
-#	@iters : number of iterations 
-# 	@throwout : number of iterations to throwout 
-#
-function measure_put_channel(throwout, iters)
-	ch = Channel(32)
-	lat = Array{Int64}(iters)
-	for i = 1:throwout
-		s = time_ns()
-		put!(ch, 1)
-		e = time_ns()
-		take!(ch)
-		lat[i] = e - s
-	end
-	for i = 1:iters
-		s = time_ns()
-		put!(ch, 1)
-		e = time_ns()
-		take!(ch)
-		lat[i] = e - s
-	end
-	lat
-end
-function measure_take_channel(throwout, iters)
-	ch = Channel(32)
-	lat = Array{Int64}(iters)
-	for i = 1:throwout
-		put!(ch, 1)
-		s = time_ns()
-		take!(ch)
-		e = time_ns()
-		lat[i] = e - s
-	end
-	for i = 1:iters
-		put!(ch, 1)
-		s = time_ns()
-		take!(ch)
-		e = time_ns()
-		lat[i] = e - s
-	end
-	lat
-end
-function measure_fetch_channel(throwout, iters)
-	ch = Channel(32)
-	lat = Array{Int64}(iters)
-	for i = 1:throwout
-		put!(ch, 1)
-		s = time_ns()
-		fetch(ch)
-		e = time_ns()
-		lat[i] = e - s
-	end
-	for i = 1:iters
-		put!(ch, 1)
-		s = time_ns()
-		fetch(ch)
-		e = time_ns()
-		lat[i] = e - s
-	end
-	lat
-end
 
