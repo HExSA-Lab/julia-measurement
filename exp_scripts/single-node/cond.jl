@@ -7,61 +7,72 @@
 addprocs(1)
 
 
-@everywhere mutable struct Condargs
-    wait_iters::Int
-    cvar::Condition
-    starttime::Int64
-    endtime::Int64
-end
+# holds the number of iterations to wait
+const work = RemoteChannel(()->Channel{Int}(1))
 
+# holds the remote wakeup timestamps
+const res  = RemoteChannel(()->Channel{Int64}(1))
 
-const work = RemoteChannel(()->Channel{Condargs}(1))
-const res = RemoteChannel(()->Channel{Int64}(1))
+# equiv of the condition var
+const wait = RemoteChannel(()->Channel{Int}(1))
 
-@everywhere const cvar = Condition()
+# worker function
+@everywhere function waitonit(work, res, wait)
 
-@everywhere function waitonit(work, res, cond)
-	
-    println("waitonint starting")
+    wait_iters = take!(work)
 
-    cargs = take!(work)
-
-    println("started at ", cargs.starttime, " waiting on ", cargs.cvar)
-
-    for i=1:cargs.wait_iters
-        wait(cvar) 	
-        println("notified")
+    for i=1:wait_iters
+        take!(wait)
         endtime = time_ns()
         put!(res, endtime)
     end
 
 end
 
+# TODO: need to factor out the notify overhead
+# TODO: assumption is iters > throwout
 function measure_notify_condition(throwout, iters)
 
-    c = Condition()
-    cargs = Condargs(throwout, c, 0, 0)
-    println("running the remote do")
+    lats = Array{Int64}(iters)
 
-    put!(work, cargs)
+    put!(work, throwout)
+
     # run it on a different core
-    @async remote_do(waitonit, 2, work, res)
-    println("back from remote do")
-    
+    @async remote_do(waitonit, 2, work, res, wait)
+
     # remote proc is now waiting 
 
     for i=1:throwout
 
         s = time_ns()
 
-        notify(c)
+        put!(wait, 1)
 
         e = take!(res)
             
-        println("Got difference: ", e - s)
+        lats[i] = e - s
         
     end
+
+    # remote worker is dead now, revive it
+
+    put!(work, iters)
+
+    @async remote_do(waitonit, 2, work, res, wait)
     
+    for i=1:iters
+
+        s = time_ns()
+
+        put!(wait, 1)
+
+        e = take!(res)
+            
+        lats[i] = e - s
+        
+    end
+
+    lats
     
 end
 
