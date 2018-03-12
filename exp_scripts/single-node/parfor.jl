@@ -85,3 +85,35 @@ function measure_pmap(iters, throwout, size, nprocs)
     times
 
 end
+
+function measure_thread_for(iters, throwout, size, nprocs)
+
+    addprocs(nprocs)
+
+    a = SharedArray{Int}(size)
+    
+    times = Array{Int64}(iters)
+
+    for i=1:throwout
+        s = time_ns()
+        @sync Threads.@threads for j=1:size
+            a[j] = j
+        end
+        e = time_ns()
+    end
+
+    for i=1:iters
+        s = time_ns()
+        @sync Threads.@threads for j=1:size
+            a[j] = j
+        end
+        e = time_ns()
+        times[i] = e - s
+    end
+
+    rmprocs(workers())
+
+    times
+
+
+end
