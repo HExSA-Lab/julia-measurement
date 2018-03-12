@@ -76,4 +76,3 @@ function measure_notify_condition(throwout, iters)
     
 end
 
-
