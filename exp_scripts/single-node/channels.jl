@@ -12,18 +12,14 @@ function measure_put_channel(throwout, iters, chan_size)
 
 	for i = 1:throwout
 		s = time_ns()
-		for p in workers()
-			put!(ch, 1)
-		end
+		put!(ch, 1)
 		e = time_ns()
 		take!(ch)
 		lat[i] = e - s
 	end
 	for i = 1:iters
 		s = time_ns()
-		for p in workers()
-			put!(ch, 1)
-		end
+		put!(ch, 1)
 		e = time_ns()
 		take!(ch)
 		lat[i] = e - s
@@ -39,11 +35,9 @@ function measure_take_channel(throwout, iters, chan_size)
 
 	ch = Channel(chan_size)
 	lat = Array{Int64}(iters)
-	addprocs(1)
+
 	for i = 1:throwout
-		for p in workers()
-			put!(ch, 1)
-		end
+		put!(ch, 1)
 		s = time_ns()
 		take!(ch)
 		e = time_ns()
@@ -51,11 +45,9 @@ function measure_take_channel(throwout, iters, chan_size)
 	end
 
 	for i = 1:iters
-		for p in workers()
-			put!(ch, 1)
-		end
+		put!(ch, 1)
 		s = time_ns()
-		println(take!(ch))
+		take!(ch)
 		e = time_ns()
 		lat[i] = e - s
 	end
@@ -65,22 +57,18 @@ function measure_take_channel(throwout, iters, chan_size)
 end
 
 
-function measure_fetch_channel(throwout, iters, chan_size)
-	ch = Channel(chan_size)
+function measure_fetch_channel(throwout, iters)
+	ch = Channel(32)
 	lat = Array{Int64}(iters)
 	for i = 1:throwout
-		for p in workers()
-			put!(ch, 1)
-		end
+		put!(ch, 1)
 		s = time_ns()
 		fetch(ch)
 		e = time_ns()
 		lat[i] = e - s
 	end
 	for i = 1:iters
-		for p in workers()
-			put!(ch, 1)
-		end
+		put!(ch, 1)
 		s = time_ns()
 		fetch(ch)
 		e = time_ns()
