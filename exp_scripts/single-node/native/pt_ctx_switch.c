@@ -50,6 +50,18 @@ thread_switch_func (void * in)
 }
 
 
+/*
+ * This approximates the latency of a (kernel) thread context switch by
+ * cramming two pthreads on the same core and having them yield() to each other
+ * a set number of times. We record the yield() throughput and estimate the
+ * latency from it. This will give us some semblance of a baseline to compare
+ * Julia's user threading against.
+ *
+ * NOTE: ideally we'd use the TSC intelligently here (with proper
+ * serialization) for finer-grained measurements, but Julia seems to be using
+ * the realtime clock, so we'd like to compare apples to apples.
+ *
+ */
 static void
 measure_ctx_switch (unsigned throwout, unsigned trials, unsigned yield_count)
 {
@@ -57,12 +69,11 @@ measure_ctx_switch (unsigned throwout, unsigned trials, unsigned yield_count)
     pthread_barrier_t * b = malloc(sizeof(pthread_barrier_t));
     switch_cont_t * cont1 = malloc(sizeof(switch_cont_t));
     switch_cont_t * cont2 = malloc(sizeof(switch_cont_t));
-    //uint64_t start = 0;
-    //uint64_t end = 0;
+
     struct timespec start;
     struct timespec end;
-    int i;
 
+    int i;
 
     cont1->b   = b;
     cont1->id  = 0;
@@ -94,13 +105,11 @@ measure_ctx_switch (unsigned throwout, unsigned trials, unsigned yield_count)
         // fire the gun
         go = 1;
 
-        //rdtscll(start);
         clock_gettime(CLOCK_REALTIME, &start);
 
         // wait for them to finish yielding to one another
         while ( !(done[0] && done[1]) );
 
-        //rdtscll(end);
         clock_gettime(CLOCK_REALTIME, &end);
 
         long s_ns = start.tv_sec*1000000000 + start.tv_nsec;

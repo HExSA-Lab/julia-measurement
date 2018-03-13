@@ -24,6 +24,15 @@ thread_create_func (void * in)
 }
 
 
+/*
+ *
+ * Measures the latency for a call to pthread_create(). Note that this does not
+ * actually measure the end-to-end creation latency, i.e. the time it takes for
+ * the thread to actually start *running*. This only will really account for
+ * the creation of the appropriate scheduler structures, stack allocation, and
+ * the clone() invocation.
+ *
+ */
 static void
 measure_thread_create (unsigned throwout, unsigned trials)
 {
