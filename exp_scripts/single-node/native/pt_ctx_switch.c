@@ -171,7 +171,7 @@ main (int argc, char ** argv)
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "t:y:hv", lopts, &optidx);
+        c = getopt_long(argc, argv, "t:y:hvk:", lopts, &optidx);
 
         if (c == -1) {
             break;
