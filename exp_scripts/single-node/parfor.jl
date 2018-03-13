@@ -1,21 +1,21 @@
-
 #
-# @parallel will take the jobs to be done and divy them up 
-# amongst available workers right away.
-# @parallel we get The specified range partitioned across all workers. 
-# pmap will start each worker on a job. 
-# Once a worker finishes with a job, it will give it the next available job. 
-# It is similar to queue based multiprocessing as is common in python. 
-# Thus pmap is  not so much a case of "redistributing" work 
-# but rather of only giving it out at the right time 
-# and to the right worker in the first place.
+# @parallel will take the jobs to be done and divy them up # amongst available
+workers right away.  # @parallel we get The specified range partitioned across
+all workers.  # pmap will start each worker on a job.  # Once a worker finishes
+with a job, it will give it the next available job.  # It is similar to queue
+based multiprocessing as is common in python.  # Thus pmap is  not so much
+a case of "redistributing" work # but rather of only giving it out at the right
+time # and to the right worker in the first place.
 #
 #
 
-
-# measure @parallel
-# measure the time taken to set an array in parallel
-# using a @parallel for by nprocs workers. 
+#
+# Measures @parallel for loop.
+#
+# Measure the time taken to set an array element to its index # in parallel
+# using a @parallel for by nprocs workers. This is an embarassingly parallel
+# op so there won't be any synchronization points (or reductions) performed
+# across loops.
 #
 # @iters: number of trials to run for the experiment
 # @throwout: number of trials to throw out
@@ -53,9 +53,11 @@ function measure_parfor(iters, throwout, size, nprocs)
 
 end
 
-# measure pmap()
+
+# Measures pmap() primitive
+#
 # measures time taken by pmap to allocating a new array  
-# 	@ iters		: number of iterations
+# 	@iters		: number of iterations
 #	@throwout  	: number of iterations to throwout 
 #	@size		: size of array
 #	@nprocs		: number of workers
@@ -86,9 +88,15 @@ function measure_pmap(iters, throwout, size, nprocs)
 
 end
 
-function measure_thread_for(iters, throwout, size, nprocs)
 
-    addprocs(nprocs)
+# Measures the same as the above but using the
+# experimental threads package.
+#
+# 	@iters		: number of iterations
+#	@throwout  	: number of iterations to throwout 
+#	@size		: size of array
+#
+function measure_thread_for(iters, throwout, size)
 
     a = SharedArray{Int}(size)
     
@@ -111,9 +119,6 @@ function measure_thread_for(iters, throwout, size, nprocs)
         times[i] = e - s
     end
 
-    rmprocs(workers())
-
     times
-
 
 end
