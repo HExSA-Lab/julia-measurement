@@ -10,7 +10,8 @@ all: pt_ctx_switch \
 	 pt_create \
 	 pt_synch \
 	 omp_parfor \
-	 atomics
+	 atomics \
+	 cond
 
 pt_synch: pt_synch.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -27,8 +28,11 @@ omp_parfor: omp_parfor.c common.h
 atomics: atomics.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+cond: cond.c common.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 clean:
-	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics *.o
+	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond *.o
 
 
 .PHONY: clean
