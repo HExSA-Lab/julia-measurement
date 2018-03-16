@@ -86,18 +86,16 @@ measure_ctx_switch (unsigned throwout, unsigned trials, unsigned yield_count)
         pthread_barrier_init(b, NULL, 3);
 
         cpu_set_t cpuset;
+        pthread_attr_t attr;
         CPU_ZERO(&cpuset);
         CPU_SET(1, &cpuset);
+        pthread_attr_init(&attr);
+
+        pthread_attr_setaffinity_np(&attr, sizeof(cpuset), &cpuset);
 
         // must explicitly pin them to separate cores
-        pthread_create(&t[0], NULL, thread_switch_func, cont1);
-        pthread_setaffinity_np(t[0], sizeof(cpu_set_t), &cpuset);
-
-        pthread_create(&t[1], NULL, thread_switch_func, cont2);
-        pthread_setaffinity_np(t[1], sizeof(cpu_set_t), &cpuset);
-
-        // give some time to the scheduler to pin them
-        usleep(10000);
+        pthread_create(&t[0], &attr, thread_switch_func, cont1);
+        pthread_create(&t[1], &attr, thread_switch_func, cont2);
 
         // wait for them to be ready
         while ( !(ready[0] && ready[1]) );
