@@ -9,7 +9,8 @@ LDFLAGS:=
 all: pt_ctx_switch \
 	 pt_create \
 	 pt_synch \
-	 omp_parfor
+	 omp_parfor \
+	 atomics
 
 pt_synch: pt_synch.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -23,8 +24,11 @@ pt_create: pt_create.c common.h
 omp_parfor: omp_parfor.c common.h
 	$(CC) $(OMPCFLAGS) $(LDFLAGS) -o $@ $<
 
+atomics: atomics.c common.h
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 clean:
-	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor *.o
+	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics *.o
 
 
 .PHONY: clean
