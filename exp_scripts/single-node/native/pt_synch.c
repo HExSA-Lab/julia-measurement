@@ -1,4 +1,21 @@
+/*
+ * This set of experiments measures the overheads of several POSIX
+ * synchronization primitives, including:
+ *
+ *  * pthread_mutex
+ *  * pthread_spinlock
+ *  * POSIX semaphores
+ *
+ * Note that contention is *not* taken into account, so we're really just
+ * measuring the function call overhead here.
+ *
+ * HExSA Lab (c) 2018
+ * Kyle C. Hale <khale@cs.iit.edu>
+ *
+ */
+
 #define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
