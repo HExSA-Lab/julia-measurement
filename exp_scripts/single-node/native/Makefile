@@ -1,13 +1,15 @@
-
 CC:=gcc
 LD:=ld
 AR:=ar
 CFLAGS:=-Wall -O2 -pthread
-LDFLAGS:=
 OMPCFLAGS:=-Wall -O2 -fopenmp
+LDFLAGS:=
 
 
-all: pt_ctx_switch pt_create pt_synch omp_parfor
+all: pt_ctx_switch \
+	 pt_create \
+	 pt_synch \
+	 omp_parfor
 
 pt_synch: pt_synch.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<

@@ -13,9 +13,11 @@
 
 #define VERSION_STRING "0.0.1"
 
-#define DEFAULT_TRIALS 100
-#define DEFAULT_THROWOUT 10
+#define DEFAULT_TRIALS    100
+#define DEFAULT_THROWOUT  10
+#define DEFAULT_EXP       SPIN_LOCK
 
+#define ARGTYPE_TO_ENUM(x) ((x) - 10)
 
 
 static void 
@@ -50,6 +52,7 @@ measure_mutex_lock (unsigned throwout, unsigned trials)
     pthread_mutex_destroy(&mutex);
 }
 
+
 static void 
 measure_mutex_trylock (unsigned throwout, unsigned trials)
 {
@@ -83,7 +86,6 @@ measure_mutex_trylock (unsigned throwout, unsigned trials)
 
     pthread_mutex_destroy(&mutex);
 }
-        
 
 
 static void
@@ -151,6 +153,7 @@ measure_spin_lock (unsigned throwout, unsigned trials)
     pthread_spin_destroy(&lock);
 }
 
+
 static void 
 measure_spin_trylock (unsigned throwout, unsigned trials)
 {
@@ -185,6 +188,7 @@ measure_spin_trylock (unsigned throwout, unsigned trials)
     pthread_spin_destroy(&lock);
 }
 
+
 static void 
 measure_spin_unlock (unsigned throwout, unsigned trials)
 {
@@ -215,6 +219,74 @@ measure_spin_unlock (unsigned throwout, unsigned trials)
     }
 
     pthread_spin_destroy(&lock);
+}
+
+
+static void
+measure_sem_up (unsigned throwout, unsigned trials)
+{
+    struct timespec start;
+    struct timespec end;
+    sem_t sem;
+    int i;
+
+    // not shared between processes
+    sem_init(&sem, 0, 0);
+
+    for (i = 0; i < throwout + trials; i++) {
+
+        clock_gettime(CLOCK_REALTIME, &start);
+
+        sem_post(&sem);
+
+        clock_gettime(CLOCK_REALTIME, &end);
+
+        sem_wait(&sem);
+
+        long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+        long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+
+        if (i >= throwout) {
+            printf("%lu\n", e_ns - s_ns);
+        }
+
+    }
+
+    sem_destroy(&sem);
+}
+
+
+static void
+measure_sem_down (unsigned throwout, unsigned trials)
+{
+    struct timespec start;
+    struct timespec end;
+    sem_t sem;
+    int i;
+
+    // not shared between processes
+    sem_init(&sem, 0, 0);
+
+    for (i = 0; i < throwout + trials; i++) {
+
+        sem_post(&sem);
+
+        clock_gettime(CLOCK_REALTIME, &start);
+
+        sem_wait(&sem);
+
+        clock_gettime(CLOCK_REALTIME, &end);
+
+        long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+        long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+
+        if (i >= throwout) {
+            printf("%lu\n", e_ns - s_ns);
+        }
+
+    }
+
+    sem_destroy(&sem);
 }
 
 
@@ -262,6 +334,7 @@ typedef enum exp_type {
     SEM_DOWN,
 } exp_type_t;
 
+
 static const char * type_to_str[8] = {
     "spin-lock",
     "spin-trylock",
@@ -273,7 +346,10 @@ static const char * type_to_str[8] = {
     "sem-down",
 };
 
-void (*type_to_func_map)(unsigned throwout, unsigned trials)[8] = {
+
+typedef void (*exp_func_t)(unsigned, unsigned);
+
+exp_func_t type_to_func_map[8] = {
     measure_spin_lock,
     measure_spin_trylock,
     measure_spin_unlock,
@@ -284,12 +360,26 @@ void (*type_to_func_map)(unsigned throwout, unsigned trials)[8] = {
     measure_sem_down,
 };
 
-int 
-main (int argc, char ** argv)
-{
-    unsigned trials = DEFAULT_TRIALS;
-    unsigned throwout = DEFAULT_THROWOUT;
 
+static void
+print_exp_hdr (const char * exp, unsigned trials, unsigned throwout)
+{
+    printf("# pthread synchronization experiment config:\n");
+    printf("# Experiment = %s\n", exp);
+    printf("# Clocksource = clock_gettime(CLOCK_REALTIME)\n");
+    printf("# Output is in ns\n");
+    printf("# %d trials\n", trials);
+    printf("# %d throwout\n", throwout);
+}
+
+
+static void
+parse_args (int argc, 
+            char ** argv, 
+            unsigned * trials,
+            unsigned * throwout,
+            int * exp_id)
+{
     int c;
 
     while (1) {
@@ -301,14 +391,14 @@ main (int argc, char ** argv)
             {"throwout", required_argument, 0, 'k'},
             {"help", no_argument, 0, 'h'},
             {"version", no_argument, 0, 'v'},
-            {"spin-lock", no_argument, 0, 0},
-            {"spin-trylock", no_argument, 0, 0},
-            {"spin-unlock", no_argument, 0, 0},
-            {"mutex-lock", no_argument, 0, 0},
-            {"mutex-trylock", no_argument, 0, 0},
-            {"mutex-unlock", no_argument, 0, 0},
-            {"sem-up", no_argument, 0, 0},
-            {"sem-down", no_argument, 0, 0},
+            {"spin-lock", no_argument, 0, 10},
+            {"spin-trylock", no_argument, 0, 11},
+            {"spin-unlock", no_argument, 0, 12},
+            {"mutex-lock", no_argument, 0, 13},
+            {"mutex-trylock", no_argument, 0, 14},
+            {"mutex-unlock", no_argument, 0, 15},
+            {"sem-up", no_argument, 0, 16},
+            {"sem-down", no_argument, 0, 17},
             {0, 0, 0, 0}
         };
 
@@ -320,10 +410,10 @@ main (int argc, char ** argv)
 
         switch (c) {
             case 't':
-                trials = atoi(optarg);
+                *trials = atoi(optarg);
                 break;
             case 'k':
-                throwout = atoi(optarg);
+                *throwout = atoi(optarg);
                 break;
             case 'h':
                 usage(argv[0]);
@@ -331,21 +421,43 @@ main (int argc, char ** argv)
             case 'v':
                 version();
                 exit(EXIT_SUCCESS);
+            /* experiments are denoted by codes (see the longopts struct above) */
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+                *exp_id = ARGTYPE_TO_ENUM(c);
+                break;
             case '?':
                 break;
             default:
                 printf("?? getopt returned character code 0%o ??\n", c);
+                usage(argv[0]);
+                exit(EXIT_SUCCESS);
         }
 
     }
 
-    printf("# pthread synchronization experiment config:\n");
-    printf("# Clocksource = clock_gettime(CLOCK_REALTIME)\n");
-    printf("# Output is in ns\n");
-    printf("# %d trials\n", trials);
-    printf("# %d throwout\n", throwout);
-
-    return 0;
 }
 
 
+int 
+main (int argc, char ** argv)
+{
+    unsigned trials =   DEFAULT_TRIALS;
+    unsigned throwout = DEFAULT_THROWOUT;
+    int exp_id =        DEFAULT_EXP;
+
+    parse_args(argc, argv, &trials, &throwout, &exp_id);
+
+    print_exp_hdr(type_to_str[exp_id], trials, throwout);
+
+    // run the experiment
+    type_to_func_map[exp_id](throwout, trials);
+
+    return 0;
+}
