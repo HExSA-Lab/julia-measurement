@@ -1,9 +1,9 @@
 CC:=gcc
 LD:=ld
 AR:=ar
-CFLAGS:=-Wall -O2 -pthread
+CFLAGS:=-Wall -O2 
 OMPCFLAGS:=-Wall -O2 -fopenmp
-LDFLAGS:=
+LDFLAGS:=-pthread
 
 
 all: pt_ctx_switch \
@@ -12,7 +12,7 @@ all: pt_ctx_switch \
 	 omp_parfor \
 	 atomics \
 	 cond \
-	 channels
+	 channel
 
 pt_synch: pt_synch.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -32,17 +32,17 @@ atomics: atomics.c common.h
 cond: cond.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-channels.o: channels.c common.h pcq.h
-	$(CC) $(CFLAGS) -o $@ channels.c
+channel.o: channel.c common.h pcq.h
+	$(CC) $(CFLAGS) -Wno-unused-but-set-variable -c -o $@ channel.c
 
 pcq.o: pcq.c pcq.h
-	$(CC) $(CFLAGS) -o $@ pcq.c
+	$(CC) $(CFLAGS) -c -o $@ pcq.c
 
-channels: channels.o pcq.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ channels.o pcq.o
+channel: channel.o pcq.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ channel.o pcq.o
 
 clean:
-	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond channels *.o
+	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond channel *.o
 
 
 .PHONY: clean

@@ -19,6 +19,6 @@ typedef struct pcq {
 pcq_t * pcq_create(unsigned num_elms);
 void pcq_destroy(pcq_t * q);
 void * pcq_get(pcq_t * q);
-void pcq_put(pcq_t * q);
+void pcq_put(pcq_t * q, void * elm);
 
 #endif

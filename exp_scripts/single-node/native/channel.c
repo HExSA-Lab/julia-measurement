@@ -30,6 +30,7 @@ measure_pcq_get (unsigned throwout, unsigned trials)
     struct timespec s;
     struct timespec e;
     long int elm = 0xdeadbeef00000000;
+    int i;
 
     if (!pcq) {
         fprintf(stderr, "Could not create channel\n");
@@ -68,6 +69,7 @@ measure_pcq_put (unsigned throwout, unsigned trials)
     struct timespec s;
     struct timespec e;
     long int elm = 0xdeadbeef00000000;
+    int i;
 
     if (!pcq) {
         fprintf(stderr, "Could not create channel\n");
@@ -147,7 +149,7 @@ main (int argc, char ** argv)
             {"help", no_argument, 0, 'h'},
             {"version", no_argument, 0, 'v'},
             {"get", no_argument, 0, 'g'},
-            {"set", no_argument, 0, 's'},
+            {"put", no_argument, 0, 'p'},
             {0, 0, 0, 0}
         };
 
@@ -171,9 +173,9 @@ main (int argc, char ** argv)
                 exp = 0;
                 exp_str = "get";
                 break;
-            case 's':
+            case 'p':
                 exp = 1;
-                exp_str = "set";
+                exp_str = "put";
                 break;
             case 'v':
                 version();
@@ -196,7 +198,7 @@ main (int argc, char ** argv)
     if (exp == 0) {
         measure_pcq_get(throwout, trials);
     } else {
-        measure_pcq_set(throwout, trials);
+        measure_pcq_put(throwout, trials);
     }
     
     return 0;

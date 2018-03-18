@@ -1,6 +1,6 @@
-#include <stdlib.>
+#include <stdlib.h>
 #include <stdint.h>
-#include <unistd.>
+#include <unistd.h>
 #include <string.h>
 #include <pthread.h>
 
@@ -24,9 +24,9 @@ pcq_create (unsigned num_elms)
 
     memset(q, 0, sizeof(pcq_t));
 
-    pthread_mutex_init(&q->lock);
-    pthread_cond_init(&q->empty);
-    pthread_cond_init(&q->full);
+    pthread_mutex_init(&q->lock, NULL);
+    pthread_cond_init(&q->empty, NULL);
+    pthread_cond_init(&q->full, NULL);
 
     q->entries = 0;
     q->head    = 0;
@@ -87,7 +87,7 @@ pcq_get (pcq_t * q)
 }
 
 
-void *
+void
 pcq_put (pcq_t * q, void * elm)
 {
     pthread_mutex_lock(&q->lock);
