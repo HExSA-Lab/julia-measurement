@@ -11,7 +11,8 @@ all: pt_ctx_switch \
 	 pt_synch \
 	 omp_parfor \
 	 atomics \
-	 cond
+	 cond \
+	 channels
 
 pt_synch: pt_synch.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -31,8 +32,17 @@ atomics: atomics.c common.h
 cond: cond.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+channels.o: channels.c common.h pcq.h
+	$(CC) $(CFLAGS) -o $@ channels.c
+
+pcq.o: pcq.c pcq.h
+	$(CC) $(CFLAGS) -o $@ pcq.c
+
+channels: channels.o pcq.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ channels.o pcq.o
+
 clean:
-	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond *.o
+	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond channels *.o
 
 
 .PHONY: clean
