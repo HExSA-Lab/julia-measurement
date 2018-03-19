@@ -74,6 +74,46 @@ measure_thread_create (unsigned throwout, unsigned trials)
 }
 
 
+/* 
+ * Baseline for a fetch on a future.
+ */
+static void
+measure_thread_fetch (unsigned throwout, unsigned trials)
+{
+    pthread_t t;
+    struct timespec start;
+    struct timespec end;
+    int i;
+
+    for (i = 0; i < throwout + trials; i++) {
+
+        cpu_set_t cpuset;
+        pthread_attr_t attr;
+        CPU_ZERO(&cpuset);
+        CPU_SET(1, &cpuset);
+        pthread_attr_init(&attr);
+
+        // pin it to another core
+        pthread_attr_setaffinity_np(&attr, sizeof(cpuset), &cpuset);
+
+        clock_gettime(CLOCK_REALTIME, &start);
+
+        pthread_create(&t, &attr, thread_create_func, NULL);
+
+        pthread_join(t, NULL);
+
+        clock_gettime(CLOCK_REALTIME, &end);
+
+        long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+        long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+
+        if (i >= throwout) {
+            printf("%lu\n", e_ns - s_ns);
+        }
+    }
+}
+
+
 static void
 usage (char * prog)
 {
@@ -84,6 +124,10 @@ usage (char * prog)
     printf("  -k, --throwout <throwout count> : number of iterations to throw away (default=%d)\n", DEFAULT_THROWOUT);
     printf("  -h, ---help : display this message\n");
     printf("  -v, --version : display the version number and exit\n");
+
+    printf("\nExperiments (default=%s):\n", "create");
+    printf("  --create\n");
+    printf("  --fetch\n");
 
     printf("\n");
 }
@@ -102,6 +146,8 @@ main (int argc, char ** argv)
 {
     unsigned trials = DEFAULT_TRIALS;
     unsigned throwout = DEFAULT_THROWOUT;
+    int exp = 0;
+    char * exp_str;
 
     int c;
 
@@ -112,12 +158,14 @@ main (int argc, char ** argv)
         static struct option lopts[] = {
             {"trials", required_argument, 0, 't'},
             {"throwout", required_argument, 0, 'k'},
+            {"create", no_argument, 0, 'c'},
+            {"fetch", no_argument, 0, 'f'},
             {"help", no_argument, 0, 'h'},
             {"version", no_argument, 0, 'v'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "t:k:hv", lopts, &optidx);
+        c = getopt_long(argc, argv, "t:k:cfhv", lopts, &optidx);
 
         if (c == -1) {
             break;
@@ -129,6 +177,14 @@ main (int argc, char ** argv)
                 break;
             case 'k':
                 throwout = atoi(optarg);
+                break;
+            case 'c':
+                exp = 0;
+                exp_str = "create";
+                break;
+            case 'f':
+                exp = 1;
+                exp_str = "fetch";
                 break;
             case 'h':
                 usage(argv[0]);
@@ -146,11 +202,16 @@ main (int argc, char ** argv)
 
     printf("# pthread create experiment config:\n");
     printf("# Clocksource = clock_gettime(CLOCK_REALTIME)\n");
+    printf("# Experiment = %s\n", exp_str);
     printf("# Output is in ns\n");
     printf("# %d trials\n", trials);
     printf("# %d throwout\n", throwout);
 
-    measure_thread_create(throwout, trials);
+    if (exp == 0) {
+        measure_thread_create(throwout, trials);
+    } else {
+        measure_thread_fetch(throwout, trials);
+    }
     
     return 0;
 }
