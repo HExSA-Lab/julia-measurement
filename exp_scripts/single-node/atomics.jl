@@ -1,7 +1,7 @@
 # measure Base.Thread.Atomic functions 
-# TODO: Ideally we'd factor out a lot of this measurement code
+# TODO: Ideally we'd fac_or out a lot of this measurement code
 # but we need to be careful with (1) the different semantics among
-# the measured primitives and (2) proper timing placement, esp. if 
+# the measured primitives_and (2) proper timing placement, esp. if 
 # we're going to switch to RDTSC later on.
 
 #
@@ -38,7 +38,7 @@ end
 
 
 #
-# measure Base.Thread.Atomic functions : compare and set 
+# measure Base.Thread.Atomic functions : compare_and set 
 #
 # @params
 # @throwout : number of iterations to throw out 
@@ -55,7 +55,7 @@ function measure_atomic_cas(throwout, iters, def, compare, set)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.cas!(x,compare,set)
+		Threads.atomic_cas!(x,compare,set)
 		e = time_ns()
 		macas[i] = e - s
 	
@@ -64,7 +64,7 @@ function measure_atomic_cas(throwout, iters, def, compare, set)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.cas!(x,compare,set)
+		Threads.atomic_cas!(x,compare,set)
 		e = time_ns()
 		macas[i] = e - s
 	
@@ -85,37 +85,37 @@ end
 
 function measure_atomic_xchng(throwout, iters, def , newval)
 
-	maxchng =  Array{Int64}(iters)
+	m_xchng =  Array{Int64}(iters)
 	x = Threads.Atomic{Int}(def)
 
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.xchng!(x,newval)
+		Threads.atomic_xchg!(x,newval)
 		e = time_ns()
-		maxchng[i] = e - s
+		m_xchng[i] = e - s
 	
 	end
 	
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.xchng!(x,newval)
+		Threads.atomic_xchg!(x,newval)
 		e = time_ns()
-		maxchng[i] = e - s
+		m_xchng[i] = e - s
 	
 	end
-	maxchng
+	m_xchng
 end
 
 ##
-# measure Base.Thread.Atomic functions : add 
+# measure Base.Thread.Atomic functions :_add 
 #
 # @params
 # @throwout : number of iterations to throw out 
 # @iters : number of iterations 
 # @def	:  initial value
-# @newval: value to add to  initial value  
+# @newval: value to_add to  initial value  
 #
 function measure_atomic_add(throwout, iters, def , newval)
 
@@ -125,7 +125,7 @@ function measure_atomic_add(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.add!(x,newval)
+		Threads.atomic_add!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -134,7 +134,7 @@ function measure_atomic_add(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.add!(x,newval)
+		Threads.atomic_add!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -144,13 +144,13 @@ end
 
 
 #
-# measure Base.Thread.Atomic functions : subtract 
+# measure Base.Thread.Atomic functions :_subtract 
 #
 # @params
 # @throwout : number of iterations to throw out 
 # @iters : number of iterations 
 # @def	:  initial value
-# @newval: value to subtarct from  initial value  
+# @newval: value to_subtarct from  initial value  
 #
 function measure_atomic_subtract(throwout, iters, def , newval)
 
@@ -160,7 +160,7 @@ function measure_atomic_subtract(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.sub!(x,newval)
+		Threads.atomic_sub!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -169,7 +169,7 @@ function measure_atomic_subtract(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.sub!(x,newval)
+		Threads.atomic_sub!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -184,7 +184,7 @@ end
 # @throwout : number of iterations to throw out 
 # @iters : number of iterations 
 # @def	:  initial value
-# @newval: value to or initial value with 
+# @newval: value to_or initial value with 
 #
 function measure_atomic_or(throwout, iters, def , newval)
 
@@ -194,7 +194,7 @@ function measure_atomic_or(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.or!(x,newval)
+		Threads.atomic_or!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -203,7 +203,7 @@ function measure_atomic_or(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.or!(x,newval)
+		Threads.atomic_or!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -218,7 +218,7 @@ end
 # @throwout : number of iterations to throw out 
 # @iters : number of iterations 
 # @def	:  initial value
-# @newval: value to and initial value with 
+# @newval: value to_and initial value with 
 #
 function measure_atomic_and(throwout, iters, def , newval)
 
@@ -228,7 +228,7 @@ function measure_atomic_and(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.and!(x,newval)
+		Threads.atomic_and!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -237,7 +237,7 @@ function measure_atomic_and(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.and!(x,newval)
+		Threads.atomic_and!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -252,7 +252,7 @@ end
 # @throwout : number of iterations to throw out 
 # @iters : number of iterations 
 # @def	:  initial value
-# @newval: value to xor initial value with 
+# @newval: value to _or initial value with 
 #
 function measure_atomic_xor(throwout, iters, def , newval)
 
@@ -262,7 +262,7 @@ function measure_atomic_xor(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.xor!(x,newval)
+		Threads.atomic_xor!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -271,7 +271,7 @@ function measure_atomic_xor(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.xor!(x,newval)
+		Threads.atomic_xor!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -296,7 +296,7 @@ function measure_atomic_nand(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.nand!(x,newval)
+		Threads.atomic_nand!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -305,7 +305,7 @@ function measure_atomic_nand(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.nand!(x,newval)
+		Threads.atomic_nand!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -330,7 +330,7 @@ function measure_atomic_max(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.max!(x,newval)
+		Threads.atomic_max!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -339,7 +339,7 @@ function measure_atomic_max(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.max!(x,newval)
+		Threads.atomic_max!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -364,7 +364,7 @@ function measure_atomic_min(throwout, iters, def , newval)
 	for i = 1: throwout
 	
 		s = time_ns()
-		Threads.atomic.min!(x,newval)
+		Threads.atomic_min!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	
@@ -373,7 +373,7 @@ function measure_atomic_min(throwout, iters, def , newval)
 	for i = 1: iters
 	
 		s = time_ns()
-		Threads.atomic.min(x,newval)
+		Threads.atomic_min!(x,newval)
 		e = time_ns()
 		lat[i] = e - s
 	

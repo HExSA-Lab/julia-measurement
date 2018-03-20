@@ -238,7 +238,7 @@ end
 function measure_sem_acquire(size, iters, throwout)
 
 	sem = Base.Semaphore(size)
-    lats = Array{Int64}(iters)
+    	lats = Array{Int64}(iters)
 
 	for  i = 1:throwout
 		s = time_ns()
@@ -260,10 +260,10 @@ function measure_sem_acquire(size, iters, throwout)
 end
 
 
-function measure_sem_release(iters, throwout)
+function measure_sem_release(size, iters, throwout)
 
 	sem = Base.Semaphore(size)
-    lats = Array{Int64}(iters)
+    	lats = Array{Int64}(iters)
 
 	for  i = 1:throwout
 		Base.acquire(sem)
