@@ -58,6 +58,8 @@ measure_omp_parfor (unsigned throwout,
         }
 
     }
+
+    free(a);
 }
 
 

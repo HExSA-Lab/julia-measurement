@@ -8,67 +8,96 @@
 #include <pthread.h>
 #include <getopt.h>
 #include <string.h>
-#include "pt_parallel_for.h"
+
 #include "common.h"
 
 #define VERSION_STRING "0.0.1"
 
+#define MAX_THREADS 64
+
 #define DEFAULT_TRIALS 100
 #define DEFAULT_THROWOUT 10
 #define DEFAULT_SIZE 50000000
+#define DEFAULT_THREADS 2
 
+
+typedef struct thr_bounds {
+    int * start;
+    size_t count;
+    int start_idx;
+} thr_bounds_t;
 
 
 static void*
-thread_array_func (void * in)
+worker (void * in)
 {
-   thread_arr b = * (thread_arr *)in;
-   b.arr[b.ind] = b.ind;
-   printf("i can see thread start");
-   return  NULL;
+    thr_bounds_t * bounds = (thr_bounds_t*)in;
+    int i;
+
+    for (i = 0; i < bounds->count; i++) {
+        bounds->start[i] = bounds->start_idx + i;
+    }
+
+    return NULL;
 }
+
+
+/* 
+ * note that nthreads should be less than the 
+ * number of cores in the system
+ *
+ */
 static void
 measure_thread_parallel (unsigned throwout, 
 						 unsigned trials, 
-						 unsigned size)
+						 unsigned size,
+                         unsigned nthreads)
 {
-	printf("see me now");
-    pthread_t t[size]; //all threads share the same id 
+    pthread_t t[MAX_THREADS]; 
+    thr_bounds_t b[MAX_THREADS]; // args to threads
 	int * a = NULL;
     struct timespec start;
     struct timespec end;
-    int i;
-	
+    int i, j;
 
+    if (nthreads > MAX_THREADS) {
+        fprintf(stderr, "Too many threads (max=%d)\n", MAX_THREADS);
+        exit(EXIT_FAILURE);
+    }
+	
 	a = malloc(size*sizeof(int));
 
-	if  (a ==NULL) {
+	if  (a == NULL) {
 		fprintf(stderr, "Could not allocate test array");
 		exit(EXIT_FAILURE);
 	}	
 		
 	memset(a, 0, size*sizeof(int));
 
-		printf("can you see me now?");
-        cpu_set_t cpuset;
-        pthread_attr_t attr;
-        CPU_ZERO(&cpuset);
-        CPU_SET(1, &cpuset);
-        pthread_attr_init(&attr);
-        pthread_attr_setaffinity_np(&attr, sizeof(cpuset), &cpuset);
-		//create as many threads as the size of the array
-		
-		thread_arr *t_arr =  malloc( sizeof(*t_arr) + size*sizeof(int)); 
-		t_arr->ind	= i ;
-		t_arr->size	= size;
-		for (int k = 0; k<size; k++){
-				t_arr->arr[i] = 0;
-		}
     for (i = 0; i < throwout + trials; i++) {
-		
+
         clock_gettime(CLOCK_REALTIME, &start);
-		for(int j = 0; j < size; j++)	{	
-			pthread_create(&t[i], &attr, thread_array_func, &t_arr);
+
+        unsigned size_per_thread = size/nthreads;
+        int extra = size % nthreads != 0;
+
+        for (j = 0; j < nthreads; j++) {
+		
+            /* last guy gets the leftovers (this is a naive, unbalanced allocation) */
+            b[j].count = (extra && j == nthreads-1) ? 
+                (size_per_thread + (size % nthreads)) : 
+                size_per_thread;
+
+            b[j].start     = &a[size_per_thread * j];
+            b[j].start_idx = size_per_thread * j;
+
+            pthread_create(&t[j], NULL, worker, &b[j]);
+
+        }
+    
+        /* wait for them to finish */
+        for (j = 0; j < nthreads; j++) {
+            pthread_join(t[j], NULL);
         }
 		
         clock_gettime(CLOCK_REALTIME, &end);
@@ -80,12 +109,9 @@ measure_thread_parallel (unsigned throwout,
             printf("%lu\n", e_ns - s_ns);
         }
 
-        usleep(100);
-
-        pthread_join(t[size], NULL);
-
     }
-    
+
+    free(a);
 }
 
 
@@ -97,7 +123,8 @@ usage (char * prog)
 
     printf("  -t, --trials <trial count> : number of experiments to run (default=%d)\n", DEFAULT_TRIALS);
     printf("  -k, --throwout <throwout count> : number of iterations to throw away (default=%d)\n", DEFAULT_THROWOUT);
-    printf("  -s, --szie of array y (default=%d)\n", DEFAULT_SIZE);
+    printf("  -s, --size : size of array to set (default=%d)\n", DEFAULT_SIZE);
+    printf("  -r, --threads : number of threads to split work among (default=%d)\n", DEFAULT_THREADS);
     printf("  -h, ---help : display this message\n");
     printf("  -v, --version : display the version number and exit\n");
 
@@ -117,9 +144,11 @@ version ()
 int 
 main (int argc, char ** argv)
 {
-    unsigned trials = DEFAULT_TRIALS;
+    unsigned trials   = DEFAULT_TRIALS;
     unsigned throwout = DEFAULT_THROWOUT;
-	unsigned size = DEFAULT_SIZE;
+	unsigned size     = DEFAULT_SIZE;
+    unsigned threads  = DEFAULT_THREADS;
+
     int c;
 
     while (1) {
@@ -130,12 +159,13 @@ main (int argc, char ** argv)
             {"trials", required_argument, 0, 't'},
             {"throwout", required_argument, 0, 'k'},
             {"size", required_argument, 0, 's'},
+            {"threads", required_argument, 0, 'r'},
             {"help", no_argument, 0, 'h'},
             {"version", no_argument, 0, 'v'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "t:k:s:hv", lopts, &optidx);
+        c = getopt_long(argc, argv, "t:k:s:r:hv", lopts, &optidx);
 
         if (c == -1) {
             break;
@@ -151,6 +181,9 @@ main (int argc, char ** argv)
             case 's':
                 size = atoi(optarg);
                 break;
+            case 'r':
+                threads = atoi(optarg);
+                break;
             case 'h':
                 usage(argv[0]);
                 exit(EXIT_SUCCESS);
@@ -164,14 +197,16 @@ main (int argc, char ** argv)
         }
 
     }
+
     printf("# pthread parallel experiment config:\n");
     printf("# Clocksource = clock_gettime(CLOCK_REALTIME)\n");
     printf("# Output is in ns\n");
     printf("# %d trials\n", trials);
     printf("# %d throwout\n", throwout);
-    printf("# %d size\n", size);
-	measure_thread_parallel(10,100,10);
+    printf("# %d size\n", size);    
+    printf("# %d threads\n", threads);
+
+	measure_thread_parallel(throwout, trials, size, threads);
+
     return 0;
 }
-
-//iam not feeling so good
