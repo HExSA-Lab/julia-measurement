@@ -65,6 +65,7 @@ function measure_fetch_channel(throwout, iters)
 		s = time_ns()
 		fetch(ch)
 		e = time_ns()
+		take!(ch)
 		lat[i] = e - s
 	end
 	for i = 1:iters
@@ -72,6 +73,7 @@ function measure_fetch_channel(throwout, iters)
 		s = time_ns()
 		fetch(ch)
 		e = time_ns()
+		take!(ch)
 		lat[i] = e - s
 	end
 	lat
