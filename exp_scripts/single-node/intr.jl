@@ -61,7 +61,7 @@ function calib_int_call(throwout, iters)
         s = time_ns()
         interrupt()
         e = time_ns()
-        lats[i] = s - e
+        lats[i] = e - s
     end
 
     lats
