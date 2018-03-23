@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <sched.h>
@@ -12,15 +13,34 @@
 
 #define VERSION_STRING "0.0.1"
 
-#define DEFAULT_TRIALS 100
+#define DEFAULT_TRIALS   100
 #define DEFAULT_THROWOUT 10
 
+#define DEFAULT_EXP        EXP_CREATE
+#define DEFAULT_EXP_STR    "create"
+#define DEFAULT_FETCH_TYPE TYPE_NULL
+#define DEFAULT_FETCH_STR  "null"
+#define DEFAULT_FIB_ARG    20
 
 
 static void*
 thread_create_func (void * in)
 {
     return NULL;
+}
+
+static void *
+fib (void * in)
+{
+    long n = (long)in;
+
+    if (n <= 0) {
+        return (void*)0;
+    } else if (n == 1) {
+        return (void*)1;
+    } else {
+        return (void*)(n + (long)fib((void*)(n-1)));
+    }
 }
 
 
@@ -78,7 +98,10 @@ measure_thread_create (unsigned throwout, unsigned trials)
  * Baseline for a fetch on a future.
  */
 static void
-measure_thread_fetch (unsigned throwout, unsigned trials)
+measure_thread_fetch (unsigned throwout, 
+                      unsigned trials,
+                      void*(*func)(void*),
+                      void * arg)
 {
     pthread_t t;
     struct timespec start;
@@ -128,6 +151,8 @@ usage (char * prog)
     printf("\nExperiments (default=%s):\n", "create");
     printf("  --create\n");
     printf("  --fetch\n");
+    printf("       -e, --fetch-type <type string> : either use \"null\" or \"fib\", default=\"%s\"\n", DEFAULT_FETCH_STR);
+    printf("       -b, --fib-arg <arg> : if using \"fib\" function, pass this arg to it (default=%d)\n", DEFAULT_FIB_ARG);
 
     printf("\n");
 }
@@ -136,18 +161,29 @@ usage (char * prog)
 static void
 version ()
 {
-    printf("pthread create measurement code (HExSA Lab 2018)\n");
+    printf("pthread create/fetch measurement code (HExSA Lab 2018)\n");
     printf("version %s\n\n", VERSION_STRING);
 }
 
+typedef enum exp_id {
+    EXP_CREATE,
+    EXP_FETCH
+} exp_id_t;
+
+typedef enum fetch_type {
+    TYPE_NULL,
+    TYPE_FIB,
+} fetch_type_t;
 
 int 
 main (int argc, char ** argv)
 {
-    unsigned trials = DEFAULT_TRIALS;
+    unsigned trials   = DEFAULT_TRIALS;
     unsigned throwout = DEFAULT_THROWOUT;
-    int exp = 0;
-    char * exp_str;
+    int exp_id        = DEFAULT_EXP;
+    int fetch_type    = DEFAULT_FETCH_TYPE;
+    long fibarg       = DEFAULT_FIB_ARG;
+    char * exp_str    = DEFAULT_EXP_STR;
 
     int c;
 
@@ -160,12 +196,14 @@ main (int argc, char ** argv)
             {"throwout", required_argument, 0, 'k'},
             {"create", no_argument, 0, 'c'},
             {"fetch", no_argument, 0, 'f'},
+            {"fetch-type", required_argument, 0, 'e'},
+            {"fib-arg", required_argument, 0, 'b'},
             {"help", no_argument, 0, 'h'},
             {"version", no_argument, 0, 'v'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "t:k:cfhv", lopts, &optidx);
+        c = getopt_long(argc, argv, "t:k:ce:b:fhv", lopts, &optidx);
 
         if (c == -1) {
             break;
@@ -179,12 +217,22 @@ main (int argc, char ** argv)
                 throwout = atoi(optarg);
                 break;
             case 'c':
-                exp = 0;
+                exp_id = EXP_CREATE;
                 exp_str = "create";
                 break;
             case 'f':
-                exp = 1;
+                exp_id = EXP_FETCH;
                 exp_str = "fetch";
+                break;
+            case 'e':
+                if (strcmp(optarg, "null") == 0) {
+                    fetch_type = TYPE_NULL;
+                } else if (strcmp(optarg, "fib") == 0) {
+                    fetch_type = TYPE_FIB;
+                }
+                break;
+            case 'b':
+                fibarg = strtol(optarg, NULL, 10);
                 break;
             case 'h':
                 usage(argv[0]);
@@ -207,10 +255,17 @@ main (int argc, char ** argv)
     printf("# %d trials\n", trials);
     printf("# %d throwout\n", throwout);
 
-    if (exp == 0) {
+    if (exp_id == EXP_CREATE) {
         measure_thread_create(throwout, trials);
-    } else {
-        measure_thread_fetch(throwout, trials);
+    } else if (exp_id == EXP_FETCH) {
+
+        if (fetch_type == TYPE_NULL) {
+            printf("# fetch-type: null\n");
+            measure_thread_fetch(throwout, trials, thread_create_func, NULL);
+        } else if (fetch_type == TYPE_FIB) {
+            printf("# fetch-type: fib(%ld)\n", fibarg);
+            measure_thread_fetch(throwout, trials, fib, (void*)fibarg);
+        }
     }
     
     return 0;
