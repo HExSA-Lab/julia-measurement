@@ -13,7 +13,8 @@ all: pt_ctx_switch \
 	 pt_parfor \
 	 atomics \
 	 cond \
-	 channel
+	 channel \
+	 timing
 
 pt_synch: pt_synch.c common.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -45,8 +46,12 @@ pcq.o: pcq.c pcq.h
 channel: channel.o pcq.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ channel.o pcq.o
 
+timing: timing.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+
 clean:
-	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond channel *.o
+	@rm -f pt_ctx_switch pt_create pt_synch omp_parfor atomics cond channel timing *.o
 
 
 .PHONY: clean
