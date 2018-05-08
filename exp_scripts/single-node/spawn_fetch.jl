@@ -60,7 +60,7 @@ function measure_fetch_on(f, iters, throwout)
 	for i = 1:throwout
 		fut = @spawn(f)
 		s = time_ns()
-		@fetch(func)
+		@fetch(fut)
 		e = time_ns()
 	end
 
@@ -94,7 +94,7 @@ function measure_spawn_at_on(f, proc, iters)
 	for i = 1:throwout
 		s = time_ns()
 		fut = @spawnat(proc, f)
-		@fetch(func)
+		@fetch(fut)
 		e = time_ns()
 	end
 
