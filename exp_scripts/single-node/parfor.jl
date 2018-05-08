@@ -54,6 +54,23 @@ function measure_parfor(iters, throwout, size, nprocs)
 end
 
 
+# TODO: pmap needs to be passed a function which determines
+# which index it should start at and end at
+function init_sub_array(a)
+
+    # use nworkers() and worker_id() to figure
+    # out where I start and where I end, and 
+    # also use a.len()
+
+    start = 1 # change me
+    end = 0 # change me
+
+    for i=start:end
+        a[i] = i
+    end
+
+end
+
 # Measures pmap() primitive
 #
 # measures time taken by pmap to allocating a new array  
@@ -71,13 +88,14 @@ function measure_pmap(iters, throwout, size, nprocs)
 
     for i=1:throwout
         s = time_ns()
-        pmap(y -> y,a)
+        # TODO: update above
+        pmap(init_sub_array, a)
         e = time_ns()
     end
 
     for i=1:iters
         s = time_ns()
-        pmap(y -> y, a)
+        pmap(init_sub_array, a)
         e = time_ns()
         times[i] = e - s
     end
