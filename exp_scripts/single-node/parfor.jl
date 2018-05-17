@@ -1,12 +1,13 @@
 #
-# @parallel will take the jobs to be done and divy them up # amongst available
-workers right away.  # @parallel we get The specified range partitioned across
-all workers.  # pmap will start each worker on a job.  # Once a worker finishes
-with a job, it will give it the next available job.  # It is similar to queue
-based multiprocessing as is common in python.  # Thus pmap is  not so much
-a case of "redistributing" work # but rather of only giving it out at the right
-time # and to the right worker in the first place.
-#
+#@parallel will take the jobs to be done and divy them up
+# amongst available workers right away.  
+# @parallel we get The specified range partitioned across all workers.  
+# pmap will start each worker on a job.  
+# Once a worker finishes with a job, it will give it the next available job.  
+# It is similar to queue based multiprocessing as is common in python.  
+# Thus pmap is  not so much a case of "redistributing" work 
+# but rather of only giving it out at the right time 
+# and to the right worker in the first place. #
 #
 
 #
@@ -56,19 +57,13 @@ end
 
 # TODO: pmap needs to be passed a function which determines
 # which index it should start at and end at
-function init_sub_array(a)
-
+@everywhere function init_sub_array(arr::Array{Int64})
     # use nworkers() and worker_id() to figure
     # out where I start and where I end, and 
     # also use a.len()
-
-    start = 1 # change me
-    end = 0 # change me
-
-    for i=start:end
-        a[i] = i
+    for i=1:length(arr)
+        arr[i] = i
     end
-
 end
 
 # Measures pmap() primitive
@@ -82,22 +77,45 @@ end
 function measure_pmap(iters, throwout, size, nprocs)
 
     addprocs(nprocs)
-
-    a = [1:size]
+    @everywhere include("parfor.jl")
+    arr = Array{Int64}(size)
     times = Array{Int64}(iters)
-
+    seg_no = nprocs +1
     for i=1:throwout
         s = time_ns()
-        # TODO: update above
-        pmap(init_sub_array, a)
+        seg_size = Int(floor(size/seg_no))
+        segmented_arr = Array{Array{Int64}}(seg_no)
+         for i = 1:seg_no
+            start =(i-1)*seg_size+1
+             if i == seg_no
+                stop= size
+            else
+                stop = i*seg_size
+            end
+            segmented_arr[i]=arr[start:stop]
+        end
+        c= pmap(init_sub_array, segmented_arr)
+        arr_joined = vcat(c...)
         e = time_ns()
+
     end
 
     for i=1:iters
         s = time_ns()
-        pmap(init_sub_array, a)
+        seg_size = Int(floor(size/seg_no))
+        segmented_arr = Array{Array{Int64}}(seg_no)
+         for i = 1:seg_no
+            start =(i-1)*seg_size+1
+             if i == seg_no
+                stop= size
+            else
+                stop = i*seg_size
+            end
+            segmented_arr[i]=arr[start:stop]
+        end
+        c= pmap(init_sub_array, segmented_arr)
+        arr_joined = vcat(c...)
         e = time_ns()
-        times[i] = e - s
     end
 
     rmprocs(workers())
