@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
 #include <mpi.h>
 struct bsp_type {
@@ -32,11 +33,25 @@ static void do_flops(struct bsp_type *a)
     double val;
     double mpy;
 
+    FILE *fs;
+    struct timespec start;
+    struct timespec end;
     sum=x;
     for (i=0;i<a->flops;i++) {
+        if (a->rank == 0){
+            fs = fopen("flops_c.dat","a");
+            clock_gettime(CLOCK_REALTIME, &start);
+        }
     	val=x;
 	    mpy=x;
     	sum = sum + mpy*val;
+        if (a->rank == 0){
+            clock_gettime(CLOCK_REALTIME, &end);
+            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+            fprintf(fs,"%lu\n", e_ns - s_ns);
+            fclose(fs);
+        }
     }
 }
 
@@ -46,8 +61,22 @@ static void do_reads(struct bsp_type *a)
     int *arr = malloc(a->reads*sizeof(int));
     double sum;
 
+    FILE *fs;
+    struct timespec start;
+    struct timespec end;
     for (i=0;i<a->reads;i++) {
+        if (a->rank == 0){
+            fs = fopen("reads_c.dat","a");
+            clock_gettime(CLOCK_REALTIME, &start);
+        }
 	    sum = arr[i];
+        if (a->rank == 0){
+            clock_gettime(CLOCK_REALTIME, &end);
+            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+            fprintf(fs,"%lu\n", e_ns - s_ns);
+            fclose(fs);
+        }
     }
 }
 
@@ -60,8 +89,22 @@ static void do_writes(struct bsp_type *a)
 
     sum = x;
 
+    FILE *fs;
+    struct timespec start;
+    struct timespec end;
     for (i=0;i<a->writes;i++) {
-	arr[i] = sum;
+        if (a->rank == 0){
+            fs = fopen("writes_c.dat","a");
+            clock_gettime(CLOCK_REALTIME, &start);
+        }
+	    arr[i] = sum;
+        if (a->rank == 0){
+            clock_gettime(CLOCK_REALTIME, &end);
+            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+            fprintf(fs,"%lu\n", e_ns - s_ns);
+            fclose(fs);
+        }
     }
 }
 
@@ -70,18 +113,38 @@ static void do_compute(struct bsp_type *a)
 {
     int i;
 
+    FILE *fs;
+    struct timespec start;
+    struct timespec end;
     for (i=0;i<a->elements;i++) {
-	do_flops(a);
-	do_reads(a);
-	do_writes(a);
+        if (a->rank == 0){
+            fs = fopen("computes_c.dat","a");
+            clock_gettime(CLOCK_REALTIME, &start);
+        }
+    	do_flops(a);
+	    do_reads(a);
+    	do_writes(a);
+
+        if (a->rank == 0){
+            clock_gettime(CLOCK_REALTIME, &end);
+            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+            fprintf(fs,"%lu\n", e_ns - s_ns);
+            fclose(fs);
+        }
     }
 }
 static void do_comms(struct bsp_type *a)
 {
-    int a;
+    int a1;
+    int b;
     int i;
     int neighbor_fwd;
     int neighbor_bck;
+
+    FILE *fs;
+    struct timespec start;
+    struct timespec end;
     if (a->rank ==0){
         neighbor_bck = a->size-1;
     }
@@ -96,13 +159,23 @@ static void do_comms(struct bsp_type *a)
     }
     for (i=0;i<a->comms;i++) {
         MPI_Request req;
-        if ( MPI_Isend(a, sizeof(int), MPI_INT, neighbor_fwd, 10,a->comm_w, &req)!= MPI_SUCCESS)
+        if (a->rank == 0){
+            fs = fopen("comms_c.dat","a");
+            clock_gettime(CLOCK_REALTIME, &start);
+        }
+        if ( MPI_Isend(&a1, sizeof(int), MPI_INT, neighbor_fwd, 10,a->comm_w, &req)!= MPI_SUCCESS)
             printf("MPI_Send not successful") ;
-             
-        if(MPI_Recv(a, sizeof(int), MPI_INT, neighbor_bck, 10,a->comm_w, MPI_STATUS_IGNORE)!=MPI_SUCCESS)
+        if(MPI_Recv(&a1, sizeof(int), MPI_INT, neighbor_bck, 10,a->comm_w, MPI_STATUS_IGNORE)!=MPI_SUCCESS)
             printf("MPI_Recv not successful");
+        if (a->rank == 0){
+            clock_gettime(CLOCK_REALTIME, &end);
+            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+            fprintf(fs,"%lu\n", e_ns - s_ns);
+            fclose(fs);
+        }
     }
-//    printf("Complete\n");
+    MPI_Barrier(a->comm_w);
    
 }
 
@@ -114,20 +187,16 @@ static void do_it(int iters, int elements, int flops, int reads, int writes, int
     int size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    int i;
+    int j;
     char processorname[MPI_MAX_PROCESSOR_NAME];
     MPI_Get_processor_name(processorname,&max_len);
 
     printf("Hello world!  I am process number: %d on processor %s\n", rank, processorname);
     struct bsp_type a = { size, rank, iters,elements,flops, reads, writes, comms, MPI_COMM_WORLD};
-    for (i=0; i<iters;i++) {
+    for (j =0; j<iters;j++) {
         do_compute(&a);
-//        printf("compute->%d\n", i);
-
         do_comms(&a);
-  //      printf("comm->%d\n",i);
     }
-
 }
 int 
 main (int argc, char ** argv)
