@@ -1,0 +1,180 @@
+heat_template_version: 2015-10-15
+
+description: Bare-metal MPI cluster withh Julia using the MPICH3 implementation
+
+parameters:
+  key_name:
+    type: string
+    label: Key name
+    description: Name of a key pair to enable SSH access to the instance
+    default: default
+    constraints:
+    - custom_constraint: nova.keypair
+  reservation_id:
+    type: string
+    description: ID of the Blazar reservation to use for launching instances
+    constraints:
+    - custom_constraint: blazar.reservation
+
+  node_count:
+    type: number
+    label: Node count
+    description: Number of physical nodes
+    default: 1
+    constraints:
+      - range: { min: 1 }
+        description: There must be at least one physical node.
+
+resources:
+  mpi_keypair:
+    type: OS::Nova::KeyPair
+    properties:
+      save_private_key: true
+      name:
+        str_replace:
+          template: mpi_stack_id
+          params:
+            stack_id: { get_param: "OS::stack_id" }
+
+  instance_floating_ip:
+    type: OS::Nova::FloatingIP
+    properties:
+      pool: public
+
+  instance_association:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: { get_resource: instance_floating_ip }
+      server_id: { get_attr: [mpi_cluster, resource.0] }
+
+  export_hosts:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      outputs:
+        - name: hosts
+      group: script
+      config: |
+        #!/bin/sh
+        (echo -n $(facter ipaddress); echo -n ' '; echo $(facter hostname)) > ${heat_outputs_path}.hosts
+
+  export_hosts_sdg:
+    type: OS::Heat::SoftwareDeploymentGroup
+    properties:
+      config: { get_resource: export_hosts }
+      servers: { get_attr: [mpi_cluster, refs_map] }
+      signal_transport: HEAT_SIGNAL
+
+  populate_hosts:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+        - name: hosts
+      group: script
+      config: |
+        #!/usr/bin/env python
+        import ast
+        import os
+        import string
+        import subprocess
+        hosts = os.getenv('hosts')
+        if hosts is not None:
+            hosts = ast.literal_eval(string.replace(hosts, '\n', '\\n'))
+        with open('/etc/hosts', 'a') as hosts_file:
+          for ip_host in hosts.values():
+              hosts_file.write(ip_host.rstrip() + '\n')
+
+  populate_hosts_sdg:
+    type: OS::Heat::SoftwareDeploymentGroup
+    depends_on: export_hosts_sdg
+    properties:
+      config: { get_resource: populate_hosts }
+      servers: { get_attr: [mpi_cluster, refs_map] }
+      signal_transport: HEAT_SIGNAL
+      input_values:
+        hosts: { get_attr: [ export_hosts_sdg, hosts ] }
+
+  mpi_cluster:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: node_count }
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          name: mpi-instance-%index%
+          image: mpi-graph500-generic
+          flavor: baremetal
+          key_name: { get_param: key_name }
+          networks:
+             - network: sharednet1
+          scheduler_hints: { reservation: { get_param: reservation_id } }
+          user_data_format: SOFTWARE_CONFIG
+          software_config_transport: POLL_SERVER_HEAT
+
+          user_data:
+            str_replace:
+              template: |
+                #!/bin/bash
+
+                # fixup yum
+                sudo yum-config-manager --disable centos-openstack-newton
+
+                # disable HT
+                for CPU in `seq 24 47`
+                do
+                   echo "0" > /sys/devices/system/cpu/cpu$CPU/online;
+                done
+                sudo yum -y install wget
+
+                # Take care of access key for instance
+                cd /home/cc/.ssh/
+                cat << EOF > id_rsa.pub
+                public_key
+                EOF
+                cat << EOF > id_rsa
+                private_key
+                EOF
+                cat << EOF > config
+                Host *
+                  StrictHostKeyChecking no
+                EOF
+                cat id_rsa.pub >> authorized_keys
+                chmod 600 authorized_keys id_rsa
+                chmod 644 id_rsa.pub config
+                sudo chown cc:cc *
+
+                cd /home/cc/
+                for i in `seq 0 $(( node_count - 1 ))`
+                do
+                    echo mpi-instance-$i >> hosts
+                done
+                sudo chown cc:cc hosts
+
+                # install julia
+                sudo yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/nalimilan/julia/repo/epel-7/nalimilan-julia-epel-7.repo
+                sudo yum install -y julia cmake
+
+                # install MPI packages for Julia
+                julia -e "Pkg.add(\"MPI\")"
+                julia -e "Pkg.update()"
+                julia -e "Pkg.build(\"MPI\")"
+
+                # it installed these packages as root, so copy the metadata into
+                # cc's home dir
+                sudo mkdir /home/cc/.julia
+                sudo cp -r /root/.julia /home/cc/.julia
+                sudo chown -R cc:cc /home/cc/.julia
+
+                # mpirun_rsh -np 4 mpi-instance-0 mpi-instance-0 mpi-instance-0 mpi-instance-0 /usr/mpi/examples/graph500_mpi_one_sided 12
+
+              params:
+                node_count: { get_param: node_count }
+                private_key: { get_attr: [ mpi_keypair, private_key ] }
+                public_key: { get_attr: [ mpi_keypair, public_key ] }
+
+outputs:
+    first_instance_ip:
+      description: The public IP address of the first instance. Login with the command 'ssh cc@first_instance_ip'.
+      value: { get_attr: [instance_floating_ip, ip] }
+    deployment_results:
+      description: The private IPs and hostnames of all deployed instances
+      value: { get_attr: [export_hosts_sdg, hosts] }

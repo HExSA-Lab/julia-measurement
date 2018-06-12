@@ -1,0 +1,5 @@
+# for example to create a julia cluster (where julia_cluster is the lease name)
+./create_julia_stack.sh mbp julia_cluster 4 julia-test2
+
+# e.g., to create a new lease (e.g. for more nodes)
+blazar lease-create --physical-reservation min=1,max=64,resource_properties='["=", "$node_type", "compute_haswell"]' --start-date "2015-06-17 16:00" --end-date "2015-06-17 18:00" my-first-lease
