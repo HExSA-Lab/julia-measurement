@@ -4,6 +4,7 @@
 #For now this script and openrc scipt has been pushed in the julia-measurement repository
 
 #install openstack, vim 
+sudo yum install vim
 sudo pip install python-openstackclient
 cd /home/cc/julia-measurement/measurement_infrastructure/chameleon
 source openrc.sh
