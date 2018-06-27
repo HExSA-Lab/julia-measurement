@@ -19,12 +19,17 @@ sudo julia make_hostfile.jl >> myhosts
 sudo su
 cat myhosts>>/etc/hosts 
 #SSH into all machines
-ssh-keygen -t rsa
-filename=ipaddr
-while read -r ipaddr
+ssh-keygen
+filename=mchnames
+chmod 600 /home/cc/julia-measurement/measurement_infrastructure/chameleon/mpi_key.pem
+ssh-add /home/cc/julia-measurement/measurement_infrastructure/chameleon/mpi_key.pem
+
+while read -r mchnames
 do
 	name="$mchnames"
-	ssh-copy-id $name
-	eval 'ssh-agent'
+	echo $name
+	eval $(ssh-agent -s)
 	ssh-add ~/.ssh/id_rsa 
+	ssh-copy-id -i /home/cc/julia-measurement/measurement_infrastructure/chameleon/mpi_key.pem cc@$name
+	scp -i /home/cc/julia-measurement/measurement_infrastructure/chameleon/mpi_key.pem myhosts cc@$name:/home/cc/julia-measurement/exp_scripts/multi-node/myhosts
 done < "$filename"
