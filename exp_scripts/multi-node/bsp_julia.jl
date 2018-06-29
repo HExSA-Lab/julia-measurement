@@ -155,7 +155,17 @@ end
 
 
 function doit(nprocs, iters, elements, flops, reads, writes, comms)
-    addprocs([("tinker-1", nprocs)])
+    hostfile = open("myhosts", "r")
+    lines = 0
+    for line in eachline(hostfile)
+	lines = lines+1
+    end
+    seekstart(hostfile)
+    readuntil(hostfile, '\n')
+    for i=1:lines-1
+	machine_name = strip(readuntil(hostfile, '\n'))
+	addprocs([(machine_name, nprocs)])
+    end 
     addprocs(nprocs)
     @everywhere include("bsp_julia.jl")
     a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
