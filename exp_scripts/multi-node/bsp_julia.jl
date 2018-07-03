@@ -88,7 +88,7 @@ end
 function do_compute(a)
 
     i  = Int64
-
+#=
     if myid()==workers()[1]
          
         fn_suffix = "_native_"*string(a.nprocs)*".dat"
@@ -96,16 +96,19 @@ function do_compute(a)
         ms = open(mn, "a")
         start = time_ns()
     end
+=#
     for i=1:a.elements
     	do_flops(a)
 	    do_reads(a)
     	do_writes(a)
     end
+#=
     if myid()==workers()[1]
         stop  = time_ns()
         write(ms,"$(stop- start)\n")
         close(ms)
     end
+=#
 end
 
 function do_comms(a)
@@ -113,7 +116,6 @@ function do_comms(a)
     for i=1:a.comms
         #time here
         if myid()== 1
-            println("will open file")
             fn_suffix = "_native_"*string(a.nprocs)*".dat"
             fs = open("comms"*fn_suffix, "a")
             start = time_ns()
@@ -135,6 +137,7 @@ function do_comms(a)
 end
 
 function ping_pong(a)
+    println("Ping pong experiment on native Julia")
     min = 8 
     max = 1024*1024
     i  =min
@@ -150,7 +153,7 @@ function ping_pong(a)
         write(fs,"$(stop- start)\n")
         close(fs)
     end
-    println("out of ping_pong")
+    println("Done :ping pong ")
 end
 
 

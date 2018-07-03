@@ -153,16 +153,16 @@ resources:
                 sudo yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/nalimilan/julia/repo/epel-7/nalimilan-julia-epel-7.repo
                 sudo yum install -y julia cmake
 
+                # cc's home dir
+                sudo mkdir /home/cc/.julia
+                sudo cp -r /root/.julia /home/cc/.julia
+                sudo chown -R cc:cc /home/cc/.julia
+                sudo export JULIA_PKGDIR=/home/cc/.julia/v0.6
                 # install MPI packages for Julia
                 julia -e "Pkg.add(\"MPI\")"
                 julia -e "Pkg.update()"
                 julia -e "Pkg.build(\"MPI\")"
 
-                # it installed these packages as root, so copy the metadata into
-                # cc's home dir
-                sudo mkdir /home/cc/.julia
-                sudo cp -r /root/.julia /home/cc/.julia
-                sudo chown -R cc:cc /home/cc/.julia
 
                 # mpirun_rsh -np 4 mpi-instance-0 mpi-instance-0 mpi-instance-0 mpi-instance-0 /usr/mpi/examples/graph500_mpi_one_sided 12
 

@@ -13,7 +13,6 @@ type bsptype
 end
 
 function do_flops(a)
-    print("argh")
     i = Int64
     sum = Float64
     x::Float64=1995
@@ -45,7 +44,6 @@ function do_flops(a)
 end
 
 function do_reads(a)
-    print("argh")
     i = Int64
     mymem = Array{Int64}(reads)
     sum = Float64
@@ -72,7 +70,6 @@ end
 
 function do_writes(a)
 
-    print("argh")
     sum = Float64
     x::Float64=93
 
@@ -101,7 +98,6 @@ function do_writes(a)
 end
 
 function do_computes(a)
-    println("argh")
 
     i  = Int64
     lat_computes = Array{Float64}(a.elements)
@@ -163,7 +159,6 @@ function do_comms(a)
     MPI.Barrier(a.comm_world)
     if  a.rank==0
         temp = lat_comms
-        println("here")
         writedlm(fs, temp)
     end
 end
@@ -177,10 +172,11 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     size = MPI.Comm_size(bspcomm)
     a = bsptype(size, rank, iters, elements, flops, writes, reads, comms, bspcomm)
     
-    do_computes(a)
     for i=1:iters
+    	do_computes(a)
         print(a.rank)
-   #     do_comms(a)
+   	do_comms(a)
+	println("iteration---> ", i)
     end
     MPI.Finalize()
     

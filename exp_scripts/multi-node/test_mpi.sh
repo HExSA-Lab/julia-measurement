@@ -2,6 +2,7 @@
 N=$1
 for i in $(seq 2 $N)
 do
-       mpirun --allow-run-as-root -map-by node --mca btl_tcp_if_include eno1 --hostfile myhosts -np $i bsp_mpi 
+       echo "Processes $i"
+       mpirun -map-by node --hostfile myhosts -np $i bsp_mpi 
 done
 
