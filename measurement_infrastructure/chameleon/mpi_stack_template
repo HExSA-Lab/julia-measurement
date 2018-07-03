@@ -158,6 +158,7 @@ resources:
                 sudo cp -r /root/.julia /home/cc/.julia
                 sudo chown -R cc:cc /home/cc/.julia
                 sudo export JULIA_PKGDIR=/home/cc/.julia/v0.6
+                julia -e "Pkg.init()"
                 # install MPI packages for Julia
                 julia -e "Pkg.add(\"MPI\")"
                 julia -e "Pkg.update()"
