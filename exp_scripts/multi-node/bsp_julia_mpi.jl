@@ -40,6 +40,7 @@ function do_flops(a)
     if a.rank==0
         temp = lat_flops
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -65,6 +66,7 @@ function do_reads(a)
     if a.rank==0
         temp =lat_reads
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -121,6 +123,7 @@ function do_computes(a)
     if a.rank==0
         temp = lat_computes
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -142,12 +145,15 @@ function do_comms(a)
     else
         bck = a.rank-1
     end
+    println("done with ring architecture")
     for i=1:a.comms
-    
+   	println("enterd comm loop") 
+	println("Size-->", a.size)
         if fwd == 1
         	start = time_ns()
         end
         MPI.Send(b, fwd, 10, a.comm_world)
+	println("Sent to forward node")
         a1 = Array{Int64}(a.comms)
         MPI.Recv!(a1, bck, 10, a.comm_world)
         if fwd == 1
@@ -160,6 +166,7 @@ function do_comms(a)
     if  a.rank==0
         temp = lat_comms
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
