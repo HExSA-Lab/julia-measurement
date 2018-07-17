@@ -96,6 +96,7 @@ function do_writes(a)
     if a.rank==0
         temp = lat_writes
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -104,7 +105,6 @@ function do_computes(a)
     i  = Int64
     lat_computes = Array{Float64}(a.elements)
     if a.rank==0
-        println("opening computes file")
         fs = open("computes.dat", "a")
     end
 
@@ -131,9 +131,7 @@ function do_comms(a)
     b = Array{Int64}(a.comms)
     lat_comms = Array{Float64}(a.comms)
     if a.rank==0
-        println("will open file")
         fs = open("comms.dat", "a")
-        println("opened")
     end
     if a.rank== a.size-1
         fwd = 0
@@ -145,15 +143,11 @@ function do_comms(a)
     else
         bck = a.rank-1
     end
-    println("done with ring architecture")
     for i=1:a.comms
-   	println("enterd comm loop") 
-	println("Size-->", a.size)
         if fwd == 1
         	start = time_ns()
         end
         MPI.Send(b, fwd, 10, a.comm_world)
-	println("Sent to forward node")
         a1 = Array{Int64}(a.comms)
         MPI.Recv!(a1, bck, 10, a.comm_world)
         if fwd == 1
@@ -181,9 +175,7 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     
     for i=1:iters
     	do_computes(a)
-        print(a.rank)
    	do_comms(a)
-	println("iteration---> ", i)
     end
     MPI.Finalize()
     

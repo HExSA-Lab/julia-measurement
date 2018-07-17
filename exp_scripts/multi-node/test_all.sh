@@ -2,8 +2,8 @@
 rm -rf *.dat
 echo "Removing any previous output files"
 echo " Testing BSP on Julia Native Primitives"
-./test_julia.sh
+./test_julia.sh $1
 echo "Testing BSP on Julia and MPI"
-./test_julia_mpi.sh 16
+./test_julia_mpi.sh $1
 echo "Testing BSP on C and MPI"
-./test_mpi.sh 16
+./test_mpi.sh $1
