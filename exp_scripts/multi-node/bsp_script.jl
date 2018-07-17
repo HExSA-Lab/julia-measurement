@@ -4,9 +4,9 @@ import MPI
 
     iters = 100
     elements = 100
-    flops = 100
-    reads = 100
-    writes = 100
+    flops = 1000000
+    reads = 5000
+    writes = 5000
     comms = 100
 #    doit(iters,elements, flops, reads, writes,comms)    
     doit_mpi(iters,elements, flops, reads, writes,comms)    
