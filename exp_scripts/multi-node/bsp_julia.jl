@@ -164,12 +164,11 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 	lines = lines+1
     end
     seekstart(hostfile)
-    readuntil(hostfile, '\n')
     for i=1:lines-1
 	machine_name = strip(readuntil(hostfile, '\n'))
 	addprocs([(machine_name, nprocs)])
     end 
-    addprocs(nprocs)
+    close(hostfile)
     @everywhere include("bsp_julia.jl")
     a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
     for i=1:iters

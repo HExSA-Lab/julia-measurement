@@ -235,19 +235,20 @@ static void do_ping_pong(struct bsp_type *a)
             if (MPI_Recv(arr, i, MPI_BYTE, ping, tag, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
                 fprintf(stderr, "MPI_Recv (ping stage) unsuccessful\n");
             }
+           
         }
-
+	printf("ping done");
         /* PONG */
         if (a->rank == pong) {
             if (MPI_Send(arr, i, MPI_BYTE, ping, tag, a->comm_w) != MPI_SUCCESS) {
-                fprintf(stderr, "MPI_Send (pong stage) unsuccessful\n");
+                printf("MPI_Send (pong stage) unsuccessful\n");
             }
         } else if (a->rank == ping) {
             if (MPI_Recv(arr, i, MPI_BYTE, pong, tag, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
-                fprintf(stderr, "MPI_Recv (pong stage) unsuccessful\n");
+                printf("MPI_Recv (pong stage) unsuccessful\n");
             }
         }
-
+        printf("pong done");
         if (a->rank == ping) {
               clock_gettime(CLOCK_REALTIME, &end);
               long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
@@ -260,7 +261,7 @@ static void do_ping_pong(struct bsp_type *a)
         MPI_Barrier(a->comm_w);
       }
     MPI_Barrier(a->comm_w);
-
+    printf("out of ping pong");
 
   }
 static void do_it(int iters, int elements, int flops, int reads, int writes, int comms)
