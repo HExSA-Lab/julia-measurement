@@ -117,6 +117,7 @@ static void do_writes(struct bsp_type *a)
 
 static void do_compute(struct bsp_type *a)
 {
+    printf("In compute");
     int i;
 
     FILE *fs;
@@ -141,9 +142,11 @@ static void do_compute(struct bsp_type *a)
             fclose(fs);
         }
     }
+   printf("Out of compute");
 }
 static void do_comms(struct bsp_type *a)
 {
+    printf("In do_comms");
     int a1;
     int b;
     int i;
@@ -195,6 +198,7 @@ static void do_comms(struct bsp_type *a)
 
 static void do_ping_pong(struct bsp_type *a)
 {
+    printf("in ping pong");
     int i;
     FILE *fs = NULL;
     struct timespec start;
@@ -276,7 +280,8 @@ static void do_it(int iters, int elements, int flops, int reads, int writes, int
     for (j =0; j<iters;j++) {
         do_compute(&a);
         do_comms(&a);
-        if (size==2){
+	printf("communication done");
+        if (size==16){
             do_ping_pong(&a);
         }
     }
@@ -287,7 +292,7 @@ main (int argc, char ** argv)
 
     MPI_Init(&argc, &argv);
 //    doit(iters, reads, writes, comms);
-    do_it(10,10,1000000,5000,5000,100);
+    do_it(1,1,1000000,5000,5000,100);
 
     MPI_Finalize();
     //printf("done with finalize\n");

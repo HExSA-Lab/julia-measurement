@@ -164,6 +164,62 @@ function do_comms(a)
     end
 end
 
+function do_ping_pong(a)
+    ping = 0
+    pong = 1
+    min = 8
+    max = 1024*1024
+    i = min
+    println("ping", ping)
+    println("pong", pong)
+    while i <= max
+        if a.rank ==ping
+            file_suffix = "_"*string(i)*".dat"
+            fs = open("comms_size"*file_suffix, "a")
+        end
+        arr=Array{Int8}(i)
+
+        if a.rank ==ping
+
+              start = time_ns()
+
+        end
+
+        #PING
+
+        if a.rank == ping
+            MPI.Send(arr, pong, 10, a.comm_world)
+            println("ping has sent")
+        else
+            MPI.Irecv!(arr, ping, 10, a.comm_world)
+            println("pong has recieved")
+        end
+
+        #PONG
+
+        if a.rank== pong
+            MPI.Send(arr, ping, 10, a.comm_world)
+	    println("pong has sent")
+        else
+            MPI.Irecv!(arr, pong, 10, a.comm_world)
+            println("ping has recieved")
+        end
+
+        if a.rank == ping
+
+            # end timer print out result
+	    println("Why not")
+            stop  = time_ns()
+            write(fs,"$(stop- start)\n")
+            close(fs)
+            println("time written")
+        end
+    MPI.Barrier(a.comm_world)
+    i = i *2
+    println("After barrier")
+    end
+end
+
 function doit_mpi(iters, elements, flops, reads, writes, comms)
    
     MPI.Init()
@@ -176,7 +232,11 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     for i=1:iters
     	do_computes(a)
    	do_comms(a)
+	print("iteration-->",i)
+	if size==16
+		do_ping_pong(a)
+	end
     end
     MPI.Finalize()
-    
+    println("Finalized")    
 end
