@@ -39,7 +39,9 @@ static void do_flops(struct bsp_type *a)
     sum=x;
     for (i=0;i<a->flops;i++) {
         if (a->rank == 0){
-            fs = fopen("flops_c.dat","a");
+	    char filename[sizeof "flops_c_128.dat"];
+	    sprintf(filename, "flops_c%d.dat", a->size);
+            fs = fopen(filename,"a");
             clock_gettime(CLOCK_REALTIME, &start);
         }
     	val=x;
@@ -66,7 +68,9 @@ static void do_reads(struct bsp_type *a)
     struct timespec end;
     for (i=0;i<a->reads;i++) {
         if (a->rank == 0){
-            fs = fopen("reads_c.dat","a");
+	    char filename[sizeof "reads_c_128.dat"];
+	    sprintf(filename, "reads_c%d.dat", a->size);
+            fs = fopen(filename,"a");
             clock_gettime(CLOCK_REALTIME, &start);
         }
 	    sum = arr[i];
@@ -94,7 +98,9 @@ static void do_writes(struct bsp_type *a)
     struct timespec end;
     for (i=0;i<a->writes;i++) {
         if (a->rank == 0){
-            fs = fopen("writes_c.dat","a");
+	    char filename[sizeof "writes_c_128.dat"];
+	    sprintf(filename, "writes_c%d.dat", a->size);
+            fs = fopen(filename,"a");
             clock_gettime(CLOCK_REALTIME, &start);
         }
 	    arr[i] = sum;
@@ -118,7 +124,9 @@ static void do_compute(struct bsp_type *a)
     struct timespec end;
     for (i=0;i<a->elements;i++) {
         if (a->rank == 0){
-            fs = fopen("computes_c.dat","a");
+	    char filename[sizeof "computes_c_128.dat"];
+	    sprintf(filename, "computes_c%d.dat", a->size);
+            fs = fopen(filename,"a");
             clock_gettime(CLOCK_REALTIME, &start);
         }
     	do_flops(a);
@@ -160,7 +168,9 @@ static void do_comms(struct bsp_type *a)
     for (i=0;i<a->comms;i++) {
         MPI_Request req;
         if (a->rank == 0){
-            fs = fopen("comms_c.dat","a");
+	    char filename[sizeof "comms_c_128.dat"];
+	    sprintf(filename, "comms_c%d.dat", a->size);
+            fs = fopen(filename,"a");
             clock_gettime(CLOCK_REALTIME, &start);
         }
         if ( MPI_Isend(&a1, sizeof(int), MPI_INT, neighbor_fwd, 10,a->comm_w, &req)!= MPI_SUCCESS)
@@ -204,7 +214,7 @@ main (int argc, char ** argv)
 
     MPI_Init(&argc, &argv);
 //    doit(iters, reads, writes, comms);
-    do_it(100,100,1000000,5000,5000,100);
+    do_it(10,10,1000000,5000,5000,100);
 
     MPI_Finalize();
     //printf("done with finalize\n");
