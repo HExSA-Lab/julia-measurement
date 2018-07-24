@@ -40,6 +40,7 @@ function do_flops(a)
     if a.rank==0
         temp = lat_flops
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -65,6 +66,7 @@ function do_reads(a)
     if a.rank==0
         temp =lat_reads
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -94,6 +96,7 @@ function do_writes(a)
     if a.rank==0
         temp = lat_writes
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -102,7 +105,6 @@ function do_computes(a)
     i  = Int64
     lat_computes = Array{Float64}(a.elements)
     if a.rank==0
-        println("opening computes file")
         fs = open("computes.dat", "a")
     end
 
@@ -121,6 +123,7 @@ function do_computes(a)
     if a.rank==0
         temp = lat_computes
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -128,9 +131,7 @@ function do_comms(a)
     b = Array{Int64}(a.comms)
     lat_comms = Array{Float64}(a.comms)
     if a.rank==0
-        println("will open file")
         fs = open("comms.dat", "a")
-        println("opened")
     end
     if a.rank== a.size-1
         fwd = 0
@@ -143,7 +144,6 @@ function do_comms(a)
         bck = a.rank-1
     end
     for i=1:a.comms
-    
         if fwd == 1
         	start = time_ns()
         end
@@ -160,6 +160,7 @@ function do_comms(a)
     if  a.rank==0
         temp = lat_comms
         writedlm(fs, temp)
+	close(fs)
     end
 end
 
@@ -174,9 +175,7 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     
     for i=1:iters
     	do_computes(a)
-        print(a.rank)
    	do_comms(a)
-	println("iteration---> ", i)
     end
     MPI.Finalize()
     
