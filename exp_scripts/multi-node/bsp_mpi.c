@@ -198,7 +198,7 @@ static void do_comms(struct bsp_type *a)
 
 static void do_ping_pong(struct bsp_type *a)
 {
-    printf("in ping pong");
+    printf("in ping pong %d", a->rank);
     int i;
     FILE *fs = NULL;
     struct timespec start;
@@ -277,6 +277,7 @@ static void do_it(int iters, int elements, int flops, int reads, int writes, int
     MPI_Get_processor_name(processorname,&max_len);
 
     printf("Hello world!  I am process number: %d on processor %s\n", rank, processorname);
+    printf("Damn");
     struct bsp_type a = { size, rank, iters,elements,flops, reads, writes, comms, MPI_COMM_WORLD};
     for (j =0; j<iters;j++) {
         do_compute(&a);
