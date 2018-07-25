@@ -113,7 +113,7 @@ function do_computes(a)
         	start = time_ns()
         end
     	do_flops(a)
-	    do_reads(a)
+	do_reads(a)
     	do_writes(a)
         if a.rank==0
             stop  = time_ns()
@@ -214,10 +214,10 @@ function do_ping_pong(a)
             close(fs)
             println("time written")
         end
-    MPI.Barrier(a.comm_world)
     i = i *2
     
     end
+    MPI.Barrier(a.comm_world)
 end
 
 function doit_mpi(iters, elements, flops, reads, writes, comms)
@@ -231,10 +231,10 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     
     for i=1:iters
     	do_computes(a)
-   	do_comms(a)
 	if size==16
 		do_ping_pong(a)
 	end
+   	do_comms(a)
 	print("iteration-->",i)
     end
     println("About to finalize")
