@@ -37,23 +37,24 @@ static void do_flops(struct bsp_type *a)
     struct timespec start;
     struct timespec end;
     sum=x;
-    for (i=0;i<a->flops;i++) {
-        if (a->rank == 0){
+
+    if (a->rank == 0){
 	    char filename[sizeof "flops_c_128.dat"];
 	    sprintf(filename, "flops_c%d.dat", a->size);
-            fs = fopen(filename,"a");
-            clock_gettime(CLOCK_REALTIME, &start);
-        }
+	    fs = fopen(filename,"a");
+	    clock_gettime(CLOCK_REALTIME, &start);
+    }
+    for (i=0;i<a->flops;i++) {
     	val=x;
 	    mpy=x;
     	sum = sum + mpy*val;
-        if (a->rank == 0){
-            clock_gettime(CLOCK_REALTIME, &end);
-            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
-            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
-            fprintf(fs,"%lu\n", e_ns - s_ns);
-            fclose(fs);
-        }
+    }
+    if (a->rank == 0){
+	    clock_gettime(CLOCK_REALTIME, &end);
+	    long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+	    long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+	    fprintf(fs,"%lu\n", e_ns - s_ns);
+	    fclose(fs);
     }
 }
 
@@ -66,21 +67,22 @@ static void do_reads(struct bsp_type *a)
     FILE *fs;
     struct timespec start;
     struct timespec end;
-    for (i=0;i<a->reads;i++) {
-        if (a->rank == 0){
+
+    if (a->rank == 0){
 	    char filename[sizeof "reads_c_128.dat"];
 	    sprintf(filename, "reads_c%d.dat", a->size);
-            fs = fopen(filename,"a");
-            clock_gettime(CLOCK_REALTIME, &start);
-        }
+	    fs = fopen(filename,"a");
+	    clock_gettime(CLOCK_REALTIME, &start);
+    }
+    for (i=0;i<a->reads;i++) {
 	    sum = arr[i];
-        if (a->rank == 0){
-            clock_gettime(CLOCK_REALTIME, &end);
-            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
-            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
-            fprintf(fs,"%lu\n", e_ns - s_ns);
-            fclose(fs);
-        }
+    }
+    if (a->rank == 0){
+	    clock_gettime(CLOCK_REALTIME, &end);
+	    long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+	    long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+	    fprintf(fs,"%lu\n", e_ns - s_ns);
+	    fclose(fs);
     }
 }
 
@@ -96,21 +98,22 @@ static void do_writes(struct bsp_type *a)
     FILE *fs;
     struct timespec start;
     struct timespec end;
-    for (i=0;i<a->writes;i++) {
-        if (a->rank == 0){
+
+    if (a->rank == 0){
 	    char filename[sizeof "writes_c_128.dat"];
 	    sprintf(filename, "writes_c%d.dat", a->size);
-            fs = fopen(filename,"a");
-            clock_gettime(CLOCK_REALTIME, &start);
-        }
+	    fs = fopen(filename,"a");
+	    clock_gettime(CLOCK_REALTIME, &start);
+    }
+    for (i=0;i<a->writes;i++) {
 	    arr[i] = sum;
-        if (a->rank == 0){
-            clock_gettime(CLOCK_REALTIME, &end);
-            long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
-            long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
-            fprintf(fs,"%lu\n", e_ns - s_ns);
-            fclose(fs);
-        }
+    }
+    if (a->rank == 0){
+	    clock_gettime(CLOCK_REALTIME, &end);
+	    long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+	    long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+	    fprintf(fs,"%lu\n", e_ns - s_ns);
+	    fclose(fs);
     }
 }
 
@@ -172,7 +175,7 @@ static void do_comms(struct bsp_type *a)
         MPI_Request req;
         if (a->rank == 0){
 	    char filename[sizeof "comms_c_128.dat"];
-	    sprintf(filename, "comms_c%d.dat", a->size);
+	    sprintf(filename, "comms_c_%d.dat", a->size);
             fs = fopen(filename,"a");
             clock_gettime(CLOCK_REALTIME, &start);
         }
@@ -180,6 +183,7 @@ static void do_comms(struct bsp_type *a)
             printf("MPI_Send not successful") ;
         if(MPI_Recv(&a1, sizeof(int), MPI_INT, neighbor_bck, 10,a->comm_w, MPI_STATUS_IGNORE)!=MPI_SUCCESS)
             printf("MPI_Recv not successful");
+    	MPI_Barrier(a->comm_w);
         if (a->rank == 0){
             clock_gettime(CLOCK_REALTIME, &end);
             long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
@@ -188,7 +192,6 @@ static void do_comms(struct bsp_type *a)
             fclose(fs);
         }
     }
-    MPI_Barrier(a->comm_w);
    
 }
 
