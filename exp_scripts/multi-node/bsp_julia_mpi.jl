@@ -241,5 +241,4 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     if a.rank == 0 
 	MPI.Finalize()
     end
-    println("Finalized")    
 end
