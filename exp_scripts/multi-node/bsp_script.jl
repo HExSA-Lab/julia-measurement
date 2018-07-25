@@ -2,8 +2,8 @@ import MPI
 @everywhere include("bsp_julia_mpi.jl")
 
 
-    iters = 100
-    elements = 100
+    iters = 1
+    elements = 1
     flops = 1000000
     reads = 5000
     writes = 5000
