@@ -232,9 +232,9 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     for i=1:iters
     	do_computes(a)
    	do_comms(a)
-	if size==16
-		do_ping_pong(a)
-	end
+#	if size==16
+#		do_ping_pong(a)
+#	end
 	print("iteration-->",i)
     end
     println("About to finalize")
