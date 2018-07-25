@@ -208,15 +208,15 @@ function do_ping_pong(a)
         if a.rank == ping
 
             # end timer print out result
-	    println("Why not")
             stop  = time_ns()
             write(fs,"$(stop- start)\n")
             close(fs)
             println("time written")
         end
     i = i *2
-    
     MPI.Barrier(a.comm_world)
+    println("After Barrier")
+    
     end
 end
 
@@ -231,9 +231,9 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     
     for i=1:iters
     	do_computes(a)
-	if size==16
-		do_ping_pong(a)
-	end
+#	if size==16
+#		do_ping_pong(a)
+#	end
    	do_comms(a)
 	print("iteration-->",i)
     end

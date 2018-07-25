@@ -283,9 +283,9 @@ static void do_it(int iters, int elements, int flops, int reads, int writes, int
         do_compute(&a);
         do_comms(&a);
 	printf("communication done");
-        if (size==16){
-            do_ping_pong(&a);
-        }
+      //  if (size==16){
+       //     do_ping_pong(&a);
+       // }
     }
 }
 int 
