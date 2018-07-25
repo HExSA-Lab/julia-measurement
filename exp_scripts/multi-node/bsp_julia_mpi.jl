@@ -238,5 +238,6 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
 	print("iteration-->",i)
     end
     println("About to finalize")
-    MPI.Finalize()
+    MPI.Abort(bspcomm, 0)
 end
+
