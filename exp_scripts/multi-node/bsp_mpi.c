@@ -294,7 +294,7 @@ main (int argc, char ** argv)
 
     MPI_Init(&argc, &argv);
 //    doit(iters, reads, writes, comms);
-    do_it(1,1,1000000,5000,5000,100);
+    do_it(100,100,1000000,5000,5000,100);
 
     MPI_Finalize();
     //printf("done with finalize\n");
