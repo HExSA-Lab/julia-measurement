@@ -216,8 +216,8 @@ function do_ping_pong(a)
         end
     i = i *2
     
-    end
     MPI.Barrier(a.comm_world)
+    end
 end
 
 function doit_mpi(iters, elements, flops, reads, writes, comms)
