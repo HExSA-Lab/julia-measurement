@@ -216,6 +216,7 @@ function do_ping_pong(a)
         end
     MPI.Barrier(a.comm_world)
     i = i *2
+    
     end
 end
 
@@ -231,11 +232,12 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     for i=1:iters
     	do_computes(a)
    	do_comms(a)
-	print("iteration-->",i)
 	if size==16
 		do_ping_pong(a)
 	end
+	print("iteration-->",i)
     end
+    println("About to finalize")
     MPI.Finalize()
     println("Finalized")    
 end
