@@ -216,7 +216,6 @@ function do_ping_pong(a)
         end
     MPI.Barrier(a.comm_world)
     i = i *2
-    println("After barrier")
     end
 end
 
