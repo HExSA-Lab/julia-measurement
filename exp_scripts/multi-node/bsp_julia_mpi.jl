@@ -238,9 +238,8 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
 	print("iteration-->",i)
     end
     println("About to finalize")
-    MPI.Finalize()
-#    if a.rank == 0 
-#	MPI.Finalize()
-#    end
+    if a.rank == 0 
+	MPI.Finalize()
+    end
     println("Finalized")    
 end
