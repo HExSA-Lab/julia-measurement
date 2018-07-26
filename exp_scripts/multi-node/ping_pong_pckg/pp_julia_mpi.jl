@@ -67,7 +67,7 @@ function doit_mpi(iters)
    
     MPI.Init()
     bspcomm = MPI.COMM_WORLD
-    @everywhere include("bsp_julia_mpi.jl")
+    @everywhere include("pp_julia_mpi.jl")
     rank = MPI.Comm_rank(bspcomm)
     size = MPI.Comm_size(bspcomm)
     a = bsptype(size, rank, iters, bspcomm)

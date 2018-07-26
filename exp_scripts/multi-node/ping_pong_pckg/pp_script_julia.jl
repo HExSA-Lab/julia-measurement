@@ -2,4 +2,4 @@
 
 iters = 100
 processes = 1
-doit(j, iters)    
+doit(processes, iters)    

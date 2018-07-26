@@ -9,7 +9,7 @@ struct bsp_type {
     MPI_Comm comm_w;
 };
 
-static void do_it(int iters, int elements, int flops, int reads, int writes, int comms);
+static void do_pp(int iters);
 static void do_ping_pong(struct bsp_type *a);
 
 
@@ -84,7 +84,7 @@ static void do_ping_pong(struct bsp_type *a)
     printf("out of ping pong");
 
   }
-static void do_it(int iters)
+static void do_pp(int iters)
 {
     
     int max_len;
@@ -109,7 +109,7 @@ main (int argc, char ** argv)
 
     MPI_Init(&argc, &argv);
 //    doit(iters, reads, writes, comms);
-    do_it(100);
+    do_pp(100);
 
     MPI_Finalize();
     //printf("done with finalize\n");
