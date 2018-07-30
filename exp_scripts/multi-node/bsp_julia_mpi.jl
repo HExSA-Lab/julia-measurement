@@ -23,7 +23,9 @@ function do_flops(a)
     sum=x
     lat_flops = Array{Float64}(a.flops)
     if a.rank==0
-        fs = open("flops.dat", "a")
+        fn_suffix = "_mpi_"*string(a.size)*".dat"
+        mn = "flops"*fn_suffix
+        fs = open(mn, "a")
     end
     for i=1 :a.flops
         if a.rank==0
@@ -51,7 +53,9 @@ function do_reads(a)
     x = Float64
     lat_reads = Array{Float64}(a.reads)
     if a.rank==0
-        fs = open("reads.dat", "a")
+        fn_suffix = "_mpi_"*string(a.size)*".dat"
+        mn = "reads"*fn_suffix
+        fs = open(mn, "a")
     end
     for i=1:a.reads
         if a.rank==0
@@ -81,7 +85,9 @@ function do_writes(a)
 
     lat_writes = Array{Float64}(a.writes)
     if a.rank==0
-        fs = open("writes.dat", "a")
+        fn_suffix = "_mpi_"*string(a.size)*".dat"
+        mn = "writes"*fn_suffix
+        fs = open(mn, "a")
     end
     for i=1:a.writes
         if a.rank==0
@@ -131,7 +137,9 @@ function do_comms(a)
     b = Array{Int64}(a.comms)
     lat_comms = Array{Float64}(a.comms)
     if a.rank==0
-        fs = open("comms.dat", "a")
+        fn_suffix = "_mpi_"*string(a.size)*".dat"
+        mn = "comms"*fn_suffix
+        fs = open(mn, "a")
     end
     if a.rank== a.size-1
         fwd = 0
