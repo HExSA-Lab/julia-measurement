@@ -2,6 +2,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <getopt.h>
+#include <stdarg.h>
 #include <mpi.h>
 
 #define DEFAULT_ITER 100
@@ -31,18 +33,18 @@ struct bsp_type {
 };
 
 
-#define DEBUG_PRINT(fmt, args...) \
+#define DEBUG_PRINT(rank, fmt, args...) \
     if (global_debug_enable) {    \
-        log(fmt, ##args);         \
+        logit("R%03d-DEBUG: " fmt, rank, ##args);         \
     }
 
 
 static void
-log (const char * fmt, ...)
+logit (const char * fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    vprintf("DEBUG: " fmt, ap);
+    vprintf(fmt, ap);
     va_end(ap);
 }
 
@@ -188,9 +190,13 @@ do_comms (struct bsp_type * a)
     struct timespec start;
     struct timespec end;
 
-    DEBUG_PRINT("In do_comms");
+    DEBUG_PRINT(a->rank, "In do_comms size=%d, rank=%d, comms=%d, comm_w=0x%08x\n",
+	a->size,
+	a->rank,
+	a->comms,
+	a->comm_w);
 
-    if (a->rank ==0)
+    if (a->rank == 0)
         neighbor_bck = a->size-1;
     else
         neighbor_bck = a->rank-1;
@@ -233,6 +239,7 @@ do_comms (struct bsp_type * a)
         fclose(fs);
     }
    
+    DEBUG_PRINT(a->rank, "Out of do_comms\n");
 }
 
 
@@ -244,7 +251,7 @@ do_compute (struct bsp_type * a)
     struct timespec start;
     struct timespec end;
 
-    DEBUG_PRINT("In compute");
+    DEBUG_PRINT(a->rank, "In compute\n");
 
     for (i = 0; i < a->elements; i++) {
     	do_flops(a);
@@ -252,7 +259,7 @@ do_compute (struct bsp_type * a)
     	do_writes(a);
     }
 
-    DEBUG_PRINT("Out of compute");
+    DEBUG_PRINT(a->rank, "Out of compute\n");
 }
 
 
@@ -269,7 +276,7 @@ do_ping_pong (struct bsp_type * a)
     int ping = 0;
     int pong = 1;
 
-    DEBUG_PRINT("in ping pong %d\n", a->rank);
+    DEBUG_PRINT(a->rank, "in ping pong %d\n", a->rank);
 
     for (i = MIN_PING_PONG_SIZE; i <= MAX_PING_PONG_SIZE; i *= 2) {
 
@@ -301,7 +308,7 @@ do_ping_pong (struct bsp_type * a)
            
         }
 
-        DEBUG_PRINT("ping done\n");
+        DEBUG_PRINT(a->rank, "ping done\n");
 
         /* PONG */
         if (a->rank == pong) {
@@ -316,7 +323,7 @@ do_ping_pong (struct bsp_type * a)
             }
         }
 
-        DEBUG_PRINT("pong done\n");
+        DEBUG_PRINT(a->rank, "pong done\n");
 
         if (a->rank == ping) {
               clock_gettime(CLOCK_REALTIME, &end);
@@ -332,7 +339,7 @@ do_ping_pong (struct bsp_type * a)
 
     MPI_Barrier(a->comm_w);
 
-    DEBUG_PRINT("out of ping pong\n");
+    DEBUG_PRINT(a->rank, "out of ping pong\n");
 }
 
 
@@ -342,20 +349,17 @@ do_it (int iters,
        int flops, 
        int reads, 
        int writes, 
-       int comms)
+       int comms,
+       int rank,
+       int size)
 {
     int max_len;
-    int rank;
-    int size;
     int j;
     char processorname[MPI_MAX_PROCESSOR_NAME];
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
     MPI_Get_processor_name(processorname, &max_len);
 
-    DEBUG_PRINT("Hello world! I am process number: %d on processor %s\n", rank, processorname);
+    DEBUG_PRINT(rank, "Hello world! I am process number: %d on processor %s\n", rank, processorname);
 
     struct bsp_type a = {size, rank, iters, elements, flops, reads, writes, comms, MPI_COMM_WORLD};
 
@@ -364,7 +368,7 @@ do_it (int iters,
         do_compute(&a);
         do_comms(&a);
 
-        DEBUG_PRINT("communication done\n");
+        DEBUG_PRINT(rank, "communication done\n");
 
     //  if (size==16){
     //     do_ping_pong(&a);
@@ -412,9 +416,20 @@ main (int argc, char ** argv)
     int writes = DEFAULT_WRITES;
     int comms  = DEFAULT_COMMS;
 
+    int rank;
+    int size;
+    
+    int c;
+
     MPI_Init(&argc, &argv);
 
-    int c;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (argc < 2 && rank == 0) {
+	usage(argv[0]);
+	exit(EXIT_SUCCESS);
+    }
 
     while (1) {
 
@@ -462,11 +477,17 @@ main (int argc, char ** argv)
                 global_debug_enable = 1;
                 break;
             case 'h':
-                usage(argv[0]);
-                exit(EXIT_SUCCESS);
+				if (rank == 0) {
+					usage(argv[0]);
+					exit(EXIT_SUCCESS);
+				}
+				break;
             case 'v':
-                version();
-                exit(EXIT_SUCCESS);
+				if (rank == 0) {
+					version();
+					exit(EXIT_SUCCESS);
+				}
+				break;
             case '?':
                 break;
             default:
@@ -474,7 +495,18 @@ main (int argc, char ** argv)
         }
     }
 
-    do_it(iter, elm, flops, reads, writes, comms);
+	if (rank == 0) {
+		DEBUG_PRINT(0, "Using this configuration:\n");
+		DEBUG_PRINT(0, "  iterations: %08d\n", iter);
+		DEBUG_PRINT(0, "  elements: %08d\n", elm);
+		DEBUG_PRINT(0, "  flops: %08d\n", flops);
+		DEBUG_PRINT(0, "  reads: %08d\n", reads);
+		DEBUG_PRINT(0, "  writes: %08d\n", writes);
+		DEBUG_PRINT(0, "  comms: %08d\n", comms);
+		DEBUG_PRINT(0, "  debug_enable?: %s\n", global_debug_enable ? "yes" : "no");
+	}
+
+    do_it(iter, elm, flops, reads, writes, comms, rank, size);
 
     MPI_Finalize();
 
