@@ -1,8 +1,8 @@
 @everywhere include("bsp_julia.jl")
 
 
-    iters = 100
-    elements = 100
+    iters = 10
+    elements = 10
     flops = 1000000
     reads = 5000
     writes = 5000
