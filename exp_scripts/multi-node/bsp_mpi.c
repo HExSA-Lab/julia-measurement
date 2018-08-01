@@ -18,6 +18,11 @@
 #define MIN_PING_PONG_SIZE 8 // in bytes
 #define MAX_PING_PONG_SIZE (1024*1024) // up to 1MB
 
+#define DEBUG_PRINT(rank, fmt, args...) \
+    if (global_debug_enable) {    \
+        logit("R%03d-DEBUG: " fmt, rank, ##args);         \
+    }
+
 static int global_debug_enable = 0;
 
 struct bsp_type {
@@ -31,12 +36,6 @@ struct bsp_type {
     int comms;
     MPI_Comm comm_w;
 };
-
-
-#define DEBUG_PRINT(rank, fmt, args...) \
-    if (global_debug_enable) {    \
-        logit("R%03d-DEBUG: " fmt, rank, ##args);         \
-    }
 
 
 static void
@@ -53,8 +52,8 @@ static void
 do_flops (struct bsp_type * a)
 {
     int i;
-    double sum;
-    double x=1995;
+    double x   = 1995.0;
+    double sum = x;
 
     double val;
     double mpy;
@@ -62,7 +61,6 @@ do_flops (struct bsp_type * a)
     FILE *fs;
     struct timespec start;
     struct timespec end;
-    sum = x;
 
     if (a->rank == 0){
 	    char filename[sizeof "flops_c_128.dat"];
@@ -143,12 +141,12 @@ static void
 do_writes (struct bsp_type * a)
 {
     int i;
-    int * arr = NULL;
-    double x = 93;
-    double sum = x;
     FILE *fs;
     struct timespec start;
     struct timespec end;
+    int * arr  = NULL;
+    double x   = 93;
+    double sum = x;
 
     arr = malloc(a->writes*sizeof(int));
     if (!arr) {
@@ -191,10 +189,10 @@ do_comms (struct bsp_type * a)
     struct timespec end;
 
     DEBUG_PRINT(a->rank, "In do_comms size=%d, rank=%d, comms=%d, comm_w=0x%08x\n",
-	a->size,
-	a->rank,
-	a->comms,
-	a->comm_w);
+                a->size,
+                a->rank,
+                a->comms,
+                a->comm_w);
 
     if (a->rank == 0)
         neighbor_bck = a->size-1;
@@ -231,7 +229,7 @@ do_comms (struct bsp_type * a)
 
     }
 
-    if (a->rank == 0){
+    if (a->rank == 0) {
         clock_gettime(CLOCK_REALTIME, &end);
         long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
         long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
@@ -368,11 +366,8 @@ do_it (int iters,
         do_compute(&a);
         do_comms(&a);
 
-        DEBUG_PRINT(rank, "communication done\n");
+        DEBUG_PRINT(rank, "Communication done in %s\n", __func__);
 
-    //  if (size==16){
-    //     do_ping_pong(&a);
-    //  }
     }
 
 }
@@ -427,8 +422,8 @@ main (int argc, char ** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (argc < 2 && rank == 0) {
-	usage(argv[0]);
-	exit(EXIT_SUCCESS);
+        usage(argv[0]);
+        exit(EXIT_SUCCESS);
     }
 
     while (1) {
@@ -496,7 +491,7 @@ main (int argc, char ** argv)
     }
 
 	if (rank == 0) {
-		DEBUG_PRINT(0, "Using this configuration:\n");
+		DEBUG_PRINT(0, "Using the following experiment config:\n");
 		DEBUG_PRINT(0, "  iterations: %08d\n", iter);
 		DEBUG_PRINT(0, "  elements: %08d\n", elm);
 		DEBUG_PRINT(0, "  flops: %08d\n", flops);

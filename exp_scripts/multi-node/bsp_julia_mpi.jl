@@ -1,32 +1,32 @@
 import MPI
 
 type bsptype
-    size::Int64
-    rank::Int64
-    iters::Int64
-    elements:: Int64
-    flops :: Int64
-    reads :: Int64
-    writes :: Int64
-    comms :: Int64
+    size     :: Int64
+    rank     :: Int64
+    iters    :: Int64
+    elements :: Int64
+    flops    :: Int64
+    reads    :: Int64
+    writes   :: Int64
+    comms    :: Int64
     comm_world
 end
 
 function do_flops(a)
 
-    i = Int64
-    sum = Float64
+    i          = Int64
+    sum        = Float64
     x::Float64 = 1995
-    val = Float64
-    mpy = Float64 
-    sum = x
-    lat_flops = UInt64
+    val        = Float64
+    mpy        = Float64
+    sum        = x
+    lat_flops  = UInt64
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
-        mn = "flops"*fn_suffix
-        fs = open(mn, "a")
-        start = time_ns()
+        mn        = "flops"*fn_suffix
+        fs        = open(mn, "a")
+        start     = time_ns()
     end
 
     # do the actual floating point math
@@ -56,9 +56,9 @@ function do_reads(a)
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
-        mn = "reads"*fn_suffix
-        fs = open(mn, "a")
-        start = time_ns()
+        mn        = "reads"*fn_suffix
+        fs        = open(mn, "a")
+        start     = time_ns()
     end
 
     # do the actual reads
@@ -67,7 +67,7 @@ function do_reads(a)
     end
 
     if a.rank == 0
-        stop  = time_ns()
+        stop      = time_ns()
         lat_reads = stop - start
         write(fs, lat_reads)
         close(fs)
@@ -78,10 +78,8 @@ end
 
 function do_writes(a)
 
-    sum = Float64
-    x::Float64 = 93
-
-    sum = x
+    x::Float64   = 93.0
+    sum::Float64 = x
 
     mymem = Array{Int64}(writes)
 
@@ -89,8 +87,8 @@ function do_writes(a)
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
-        mn = "writes"*fn_suffix
-        fs = open(mn, "a")
+        mn        = "writes"*fn_suffix
+        fs        = open(mn, "a")
     end
 
     if a.rank == 0
@@ -103,8 +101,8 @@ function do_writes(a)
     end
 
     if a.rank == 0
-        stop  = time_ns()
-        lat_writes  = stop - start
+        stop       = time_ns()
+        lat_writes = stop - start
         write(fs, lat_writes)
         close(fs)
     end
@@ -128,7 +126,7 @@ end
 
 function do_comms(a)
 
-    b = Array{Int64}(a.comms)
+    b         = Array{Int64}(a.comms)
     lat_comms = UInt64
 
     if a.rank == a.size-1
@@ -145,9 +143,9 @@ function do_comms(a)
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
-        mn = "comms"*fn_suffix
-        fs = open(mn, "a")
-        start = time_ns()
+        mn        = "comms"*fn_suffix
+        fs        = open(mn, "a")
+        start     = time_ns()
     end
 
     # do the actual communication phase
@@ -161,7 +159,7 @@ function do_comms(a)
     MPI.Barrier(a.comm_world)
 
     if  a.rank == 0
-        stop  = time_ns()
+        stop      = time_ns()
         lat_comms = stop - start
         write(fs, lat_comms)
         close(fs)
@@ -174,9 +172,9 @@ function do_ping_pong(a)
 
     ping = 0
     pong = 1
-    min = 8
-    max = 1024*1024
-    i = min
+    min  = 8
+    max  = 1024*1024
+    i    = min
 
     println("ping", ping)
     println("pong", pong)
@@ -185,7 +183,7 @@ function do_ping_pong(a)
 
         if a.rank ==ping
             file_suffix = "_"*string(i)*".dat"
-            fs = open("comms_size"*file_suffix, "a")
+            fs          = open("comms_size"*file_suffix, "a")
         end
 
         arr = Array{Int8}(i)
