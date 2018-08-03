@@ -1,6 +1,6 @@
 #!/bin/bash
 N=$1
-mpicc -O2 -Wall -o bsp_mpi bsp_mpi.c
+
 for (( i=16 ; i<=$1 ;i=i*2 ))
 do
        echo "Processes $i"
