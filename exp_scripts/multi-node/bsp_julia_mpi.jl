@@ -1,4 +1,8 @@
-import MPI
+#!/usr/bin/julia
+
+using DocOpt
+
+include("cli.jl")
 
 type bsptype
     size     :: Int64
@@ -251,3 +255,15 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
 
 end
 
+# arg parsing
+args = docopt(doc, version=v"0.0.1")
+
+iters  = parse(Int, args["--iterations"])
+elms   = parse(Int, args["--elements"])
+flops  = parse(Int, args["--flops"])
+reads  = parse(Int, args["--reads"])
+writes = parse(Int, args["--writes"])
+comms  = parse(Int, args["--comms"])
+
+# actual invocation
+doit_mpi(iters, elms, flops, reads, writes, comms)

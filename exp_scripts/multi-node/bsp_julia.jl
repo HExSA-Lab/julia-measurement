@@ -1,3 +1,9 @@
+#!/usr/bin/julia
+
+using DocOpt
+
+include("cli.jl")
+
 type bsptype_julia
     nprocs   :: Int64
     iters    :: Int64
@@ -206,3 +212,17 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     rmprocs(workers())
 end
+
+# arg parsing
+args = docopt(doc, version=v"0.0.1")
+
+procs  = parse(Int, args["--nprocs"])
+iters  = parse(Int, args["--iterations"])
+elms   = parse(Int, args["--elements"])
+flops  = parse(Int, args["--flops"])
+reads  = parse(Int, args["--reads"])
+writes = parse(Int, args["--writes"])
+comms  = parse(Int, args["--comms"])
+
+# actual invocation
+doit(procs, iters, elms, flops, reads, writes, comms)
