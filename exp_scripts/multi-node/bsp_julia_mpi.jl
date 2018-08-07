@@ -24,7 +24,6 @@ function do_flops(a)
     val        = Float64
     mpy        = Float64
     sum        = x
-    lat_flops  = UInt64
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
@@ -42,9 +41,8 @@ function do_flops(a)
 
     if a.rank == 0
         stop  = time_ns()
-        lat_flops = stop - start
-        write(fs, lat_flops)
-        close(fs)
+        write(fs,"$(stop- start)\n")
+	close(fs)
     end
 
 end
@@ -52,7 +50,6 @@ end
 
 function do_reads(a)
 
-    lat_reads = UInt64
     mymem     = Array{Int64}(reads)
     sum       = Float64
     x         = Float64
@@ -72,8 +69,7 @@ function do_reads(a)
 
     if a.rank == 0
         stop      = time_ns()
-        lat_reads = stop - start
-        write(fs, lat_reads)
+        write(fs,"$(stop- start)\n")
         close(fs)
     end
 
@@ -87,7 +83,6 @@ function do_writes(a)
 
     mymem = Array{Int64}(writes)
 
-    lat_writes = UInt64
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
@@ -106,8 +101,7 @@ function do_writes(a)
 
     if a.rank == 0
         stop       = time_ns()
-        lat_writes = stop - start
-        write(fs, lat_writes)
+        write(fs,"$(stop- start)\n")
         close(fs)
     end
 end
@@ -131,7 +125,6 @@ end
 function do_comms(a)
 
     b         = Array{Int64}(a.comms)
-    lat_comms = UInt64
 
     if a.rank == a.size-1
         fwd = 0
@@ -164,8 +157,7 @@ function do_comms(a)
 
     if  a.rank == 0
         stop      = time_ns()
-        lat_comms = stop - start
-        write(fs, lat_comms)
+        write(fs,"$(stop- start)\n")
         close(fs)
     end
 
