@@ -193,7 +193,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     close(hostfile)
 
-    @everywhere include("bsp_julia.jl")
+    @everywhere include("bsp_julia_native.jl")
     a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
 
     for i=1:iters
