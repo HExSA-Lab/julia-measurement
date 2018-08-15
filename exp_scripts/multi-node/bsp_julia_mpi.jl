@@ -1,4 +1,5 @@
 #!/usr/bin/julia
+using MPI
 
 using DocOpt
 
