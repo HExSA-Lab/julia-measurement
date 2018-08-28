@@ -1,10 +1,12 @@
+#=
 #!/usr/bin/julia
+
 using MPI
 
 using DocOpt
 
 include("cli.jl")
-
+=#
 type bsptype
     size     :: Int64
     rank     :: Int64
@@ -247,7 +249,7 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     MPI.Abort(bspcomm, 0)
 
 end
-
+#=
 # arg parsing
 args = docopt(doc, version=v"0.0.1")
 
@@ -260,3 +262,4 @@ comms  = parse(Int, args["--comms"])
 
 # actual invocation
 doit_mpi(iters, elms, flops, reads, writes, comms)
+=#
