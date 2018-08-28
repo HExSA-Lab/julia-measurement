@@ -63,7 +63,7 @@ function do_ping_pong(a)
     end
 end
 
-function doit_mpi(iters)
+function doit_mpi(iters, throwout)
    
     MPI.Init()
     bspcomm = MPI.COMM_WORLD
@@ -72,7 +72,7 @@ function doit_mpi(iters)
     size = MPI.Comm_size(bspcomm)
     a = bsptype(size, rank, iters, bspcomm)
     
-    for i=1:iters
+    for i=1:iters+throwout
 	do_ping_pong(a)
 	print("iteration-->",i)
     end

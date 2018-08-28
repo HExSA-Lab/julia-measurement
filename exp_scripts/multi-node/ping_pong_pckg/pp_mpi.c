@@ -9,7 +9,7 @@ struct bsp_type {
     MPI_Comm comm_w;
 };
 
-static void do_pp(int iters);
+static void do_pp(int iters, int throwout);
 static void do_ping_pong(struct bsp_type *a);
 
 
@@ -84,7 +84,7 @@ static void do_ping_pong(struct bsp_type *a)
     printf("out of ping pong");
 
   }
-static void do_pp(int iters)
+static void do_pp(int iters, int throwout)
 {
     
     int max_len;
@@ -99,7 +99,7 @@ static void do_pp(int iters)
     printf("Hello world!  I am process number: %d on processor %s\n", rank, processorname);
     printf("Damn");
     struct bsp_type a = { size, rank, iters, MPI_COMM_WORLD};
-    for (j =0; j<iters;j++) {
+    for (j =0; j<iters+throwout;j++) {
             do_ping_pong(&a);
     }
 }
@@ -109,7 +109,7 @@ main (int argc, char ** argv)
 
     MPI_Init(&argc, &argv);
 //    doit(iters, reads, writes, comms);
-    do_pp(100);
+    do_pp(100, 10);
 
     MPI_Finalize();
     //printf("done with finalize\n");
