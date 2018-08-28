@@ -117,15 +117,15 @@ function do_comms(a)
 
     arr = Array{Int64}(a.comms)
 
-    for i = 1 : a.comms
 
         # time here
-        if myid()== 1
+    if myid()== 1
             fn_suffix = "_native_"*string(a.nprocs)*".dat"
             fs = open("comms"*fn_suffix, "a")
             start = time_ns()
-        end
+    end
 
+    for i = 1 : a.comms
         for p in workers()
             if p == workers()[nprocs()-1]
                 @sync @spawnat(workers()[1], arr)
@@ -133,45 +133,15 @@ function do_comms(a)
                 @sync @spawnat(p+1, arr) # sending a to workers p+1 from worker p
             end
         end
+    end
 
         # time here
-        if myid() == 1
-            stop  = time_ns()
-            write(fs, "$(stop- start)\n")
-            close(fs)
-        end
-
-    end
-
-end
-
-
-function ping_pong(a)
-
-    min = 8
-    max = 1024*1024
-    i   = min
-
-    println("Ping pong experiment on native Julia")
-
-    while i<= max 
-        file_suffix = "_"*string(i)*".dat"
-        fs          = open("ping_pong_native"*file_suffix, "a")
-        arr         = Array{Int8}(i)
-        start       = time_ns()
-
-        @sync @spawnat(workers()[1], arr)
-        @sync @spawnat(workers()[], @sync @spawnat(1, arr))
-
-        i = i *2
+    if myid() == 1
         stop  = time_ns()
-
-        write(fs,"$(stop- start)\n")
+        write(fs, "$(stop- start)\n")
         close(fs)
-
     end
 
-    println("Done :ping pong ")
 
 end
 
@@ -196,6 +166,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     @everywhere include("bsp_julia_native.jl")
     a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
+    println("Starting exeoriment")
 
     for i=1:iters
         for p in workers()
@@ -206,9 +177,6 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
         println("iteration ---->", i)
 
-        if nprocs == 1
-            ping_pong(a)
-        end
     end
 
     rmprocs(workers())
