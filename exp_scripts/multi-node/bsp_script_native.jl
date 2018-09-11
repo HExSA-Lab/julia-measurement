@@ -1,4 +1,5 @@
-@everywhere include("bsp_julia.jl")
+using Distributed
+Distributed.@everywhere include("bsp_julia.jl")
 
 
     iters = 10

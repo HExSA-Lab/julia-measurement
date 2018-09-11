@@ -1,5 +1,6 @@
 import MPI
-@everywhere include("bsp_julia_mpi.jl")
+using Distributed
+Distributed.@everywhere include("bsp_julia_mpi.jl")
 
 
     iters = 10

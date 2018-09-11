@@ -1,5 +1,7 @@
+using Distributed
+using Profile
 #=
-#!/usr/bin/julia
+!/usr/bin/julia
 
 using DocOpt
 
@@ -164,7 +166,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     close(hostfile)
 
-    @everywhere include("bsp_julia_native.jl")
+    Distributed.@everywhere include("bsp_julia_native.jl")
     a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
     println("Starting exeoriment")
 

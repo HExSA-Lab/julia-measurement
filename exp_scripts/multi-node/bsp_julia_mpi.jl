@@ -1,3 +1,4 @@
+using Distributed
 #=
 #!/usr/bin/julia
 
@@ -166,68 +167,13 @@ function do_comms(a)
 
 end
 
-
-function do_ping_pong(a)
-
-    ping = 0
-    pong = 1
-    min  = 8
-    max  = 1024*1024
-    i    = min
-
-    println("ping", ping)
-    println("pong", pong)
-
-    while i <= max
-
-        if a.rank ==ping
-            file_suffix = "_"*string(i)*".dat"
-            fs          = open("comms_size"*file_suffix, "a")
-        end
-
-        arr = Array{Int8}(i)
-
-        # PING phase
-        if a.rank == ping
-            start = time_ns()
-            MPI.Send(arr, pong, 10, a.comm_world)
-            println("ping has sent")
-        else
-            MPI.Irecv!(arr, ping, 10, a.comm_world)
-            println("pong has recieved")
-        end
-
-        # PONG phase
-        if a.rank == pong
-            MPI.Send(arr, ping, 10, a.comm_world)
-            println("pong has sent")
-        else
-            MPI.Irecv!(arr, pong, 10, a.comm_world)
-            println("ping has recieved")
-            stop  = time_ns()
-            write(fs,"$(stop- start)\n")
-            close(fs)
-            println("time written")
-        end
-
-        i = i * 2
-
-        MPI.Barrier(a.comm_world)
-
-        println("After Barrier")
-    
-    end
-
-end
-
-
 function doit_mpi(iters, elements, flops, reads, writes, comms)
    
     MPI.Init()
 
     bspcomm = MPI.COMM_WORLD
 
-    @everywhere include("bsp_julia_mpi.jl")
+    Distributed.@everywhere include("bsp_julia_mpi.jl")
 
     rank = MPI.Comm_rank(bspcomm)
     size = MPI.Comm_size(bspcomm)
