@@ -24,7 +24,7 @@ function ping_pong(a)
 end
 
 
-function doit(nprocs, iters)
+function doit(nprocs, iters, throwout)
     hostfile = open("myhosts", "r")
     lines = 0
     for line in eachline(hostfile)
@@ -38,7 +38,7 @@ function doit(nprocs, iters)
     close(hostfile)
     @everywhere include("pp_julia.jl")
     a = bsptype_julia(nprocs, iters)
-    for i=1:iters
+    for i=1:iters+throwout
         ping_pong(a)
     end
     rmprocs(workers())

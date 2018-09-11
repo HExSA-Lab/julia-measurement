@@ -11,12 +11,12 @@
 # OpenStack API is version 3. For example, your cloud provider may implement
 # Image API v1.1, Block Storage API v2, and Compute API v2.0. OS_AUTH_URL is
 # only for the Identity API served through keystone.
-export OS_AUTH_URL=https://chi.tacc.chameleoncloud.org:5000/v3
+export OS_AUTH_URL=https://chi.uc.chameleoncloud.org:5000/v3
 
 # With the addition of Keystone we have standardized on the term **project**
 # as the entity that owns the resources.
-export OS_PROJECT_ID=092e936af57744eaa515a9985419b680
-export OS_PROJECT_NAME="CH-819888"
+export OS_PROJECT_ID=91675c36b8be45a8ac6bead83a851f9c
+export OS_PROJECT_NAME="CH-820244"
 export OS_USER_DOMAIN_NAME="Default"
 if [ -z "$OS_USER_DOMAIN_NAME" ]; then unset OS_USER_DOMAIN_NAME; fi
 
@@ -35,7 +35,7 @@ export OS_PASSWORD=$OS_PASSWORD_INPUT
 
 # If your configuration has multiple regions, we set that information here.
 # OS_REGION_NAME is optional and only valid in certain environments.
-export OS_REGION_NAME="CHI@TACC"
+export OS_REGION_NAME="CHI@UC"
 # Don't leave a blank variable, unset it if it was empty
 if [ -z "$OS_REGION_NAME" ]; then unset OS_REGION_NAME; fi
 

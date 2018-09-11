@@ -1,7 +1,6 @@
 c_file_id = "c_"
 native_file_id = "native_"
 dat_suffix = ".dat"
-common_names =["flops_", "reads_", "writes_", "comms_"]
 cs = "comms_size_"
 ccs= "comm_size_"
 pp = "ping_pong_"
@@ -12,8 +11,6 @@ min = 8
 max = 1024*1024
 i = min
 c = 1
-proc_count = [2,4,8,16]
-julia_proc_count = [1,2,4,8]
 pp_size = Array{Int64}(Int(log2(max)-log2(min)+1))
 while i<max+1
     pp_size[c] = i
@@ -21,30 +18,8 @@ while i<max+1
     i = i*2
 end
 
-all_bsp_files = (3*length(proc_count)*length(common_names))
 all_pp_files = (3*length(pp_size))
-all_files = all_bsp_files + all_pp_files
 
-len_bsp = Int64(all_bsp_files/3)
-c_bsp_means= Array{String}(len_bsp)
-julia_bsp_means =  Array{String}(len_bsp)
-jmpi_bsp_means  = Array{String}(len_bsp)
-f_c = 1
-for j in common_names
-    for k in proc_count
-        filename_c = j*c_file_id*string(k)*dat_suffix
-        filename_jm = j*string(k)*dat_suffix
-        c_bsp_means[f_c] = filename_c
-        jmpi_bsp_means[f_c] = filename_jm
-        f_c = f_c +1
-    end
-    f_c = f_c - 4
-    for l in julia_proc_count
-        filename_jn = j*native_file_id*string(l)*dat_suffix
-        julia_bsp_means[f_c] = filename_jn
-        f_c = f_c +1
-    end
-end
 
 len_pp = Int64(all_pp_files/3)
 c_pp_means= Array{String}(len_pp)
@@ -60,8 +35,8 @@ for size in pp_size
     jmpi_pp_means[f_c] = filename_c
     f_c = f_c+1
 end
-files = [c_bsp_means, julia_bsp_means, jmpi_bsp_means, c_pp_means, julia_pp_means, jmpi_pp_means]
-filenames = ["c_bsp_means.dat", "julia_bsp_means.dat", "jmpi_bsp_means.dat", "c_pp_means.dat", "julia_pp_means.dat", "jmpi_pp_means.dat"]
+files = [c_pp_means, julia_pp_means, jmpi_pp_means]
+filenames = ["c_pp_means.dat", "julia_pp_means.dat", "jmpi_pp_means.dat"]
 f_c  = 1
 println("========================================================")
 for each_group in files
@@ -78,8 +53,12 @@ for each_group in files
             println("========================================================")
         end
         os = readdlm(f)
-        temp =mean(os)
-        temp_arr[i] =temp
+	println(size(os))
+	os = os[11:100,:]
+	println(size(os))
+#	deleteat!(os, 1:10)
+#        temp =mean(os)
+#        temp_arr[i] =temp
         i = i+1
     end
     ws = open(filenames[f_c], "a")
