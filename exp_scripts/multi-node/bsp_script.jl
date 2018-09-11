@@ -3,7 +3,7 @@ using Distributed
 Distributed.@everywhere include("bsp_julia_mpi.jl")
 
 
-    iters = 10
+    iters = 100
     elements = 10
     flops = 1000000
     reads = 5000
