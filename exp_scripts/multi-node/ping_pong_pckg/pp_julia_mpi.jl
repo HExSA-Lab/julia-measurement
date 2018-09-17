@@ -32,20 +32,16 @@ function do_ping_pong(a)
 
         if a.rank == ping
             MPI.Send(arr, pong, 10, a.comm_world)
-            println("ping has sent")
         else
             MPI.Irecv!(arr, ping, 10, a.comm_world)
-            println("pong has recieved")
         end
 
         #PONG
 
         if a.rank== pong
             MPI.Send(arr, ping, 10, a.comm_world)
-	    println("pong has sent")
         else
             MPI.Irecv!(arr, pong, 10, a.comm_world)
-            println("ping has recieved")
         end
 
         if a.rank == ping
