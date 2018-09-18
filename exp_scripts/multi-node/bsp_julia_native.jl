@@ -1,12 +1,12 @@
 using Distributed
 using Profile
-#=
+###
 !/usr/bin/julia
 
 using DocOpt
 
 include("cli.jl")
-=#
+###
 type bsptype_julia
     nprocs   :: Int64
     iters    :: Int64
