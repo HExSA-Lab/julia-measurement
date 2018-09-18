@@ -118,6 +118,9 @@ end
 function do_comms(a)
 
     arr = Array{Int64}(a.comms)
+    my_id      = my_id()
+    master     = workers()[1]
+    last_worker= workers()[nprocs()-1]
 
 
         # time here
@@ -129,8 +132,8 @@ function do_comms(a)
 
     for i = 1 : a.comms
         for p in workers()
-            if p == workers()[nprocs()-1]
-                @sync @spawnat(workers()[1], arr)
+            if p == last_worker
+                @sync @spawnat(master, arr)
             else
                 @sync @spawnat(p+1, arr) # sending a to workers p+1 from worker p
             end
