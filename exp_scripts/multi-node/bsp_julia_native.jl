@@ -1,9 +1,5 @@
 using Distributed
 using Profile
-###
-using DocOpt
-include("cli.jl")
-###
 type bsptype_julia
     nprocs   :: Int64
     iters    :: Int64
