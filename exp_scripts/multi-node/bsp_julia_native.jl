@@ -1,13 +1,13 @@
 using Distributed
 using Profile
 mutable struct  bsptype_julia
-    nprocs   :: Int64
-    iters    :: Int64
-    elements :: Int64
-    flops    :: Int64
-    reads    :: Int64
-    writes   :: Int64
-    comms    :: Int64
+    nprocs   
+    iters    
+    elements 
+    flops    
+    reads    
+    writes   
+    comms   
 end
 
 
@@ -111,13 +111,13 @@ end
 function do_comms(a)
 
     arr = Array{Int64}(a.comms)
-    my_id      = my_id()
+    my_id      = myid()
     master     = workers()[1]
     last_worker= workers()[nprocs()-1]
 
 
         # time here
-    if myid()== 1
+    if my_id== 1
             fn_suffix = "_native_"*string(a.nprocs)*".dat"
             fs = open("comms"*fn_suffix, "a")
             start = time_ns()
@@ -134,7 +134,7 @@ function do_comms(a)
     end
 
         # time here
-    if myid() == 1
+    if my_id == 1
         stop  = time_ns()
         write(fs, "$(stop- start)\n")
         close(fs)
@@ -180,7 +180,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
     rmprocs(workers())
 end
 #=
-# arg parsing
+arg parsing
 args = docopt(doc, version=v"0.0.1")
 
 procs  = parse(Int, args["--nprocs"])
@@ -191,6 +191,6 @@ reads  = parse(Int, args["--reads"])
 writes = parse(Int, args["--writes"])
 comms  = parse(Int, args["--comms"])
 
-# actual invocation
+ actual invocation
 doit(procs, iters, elms, flops, reads, writes, comms)
 =#
