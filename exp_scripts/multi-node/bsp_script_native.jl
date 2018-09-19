@@ -1,5 +1,5 @@
 using Distributed
-Distributed.@everywhere include("bsp_julia.jl")
+Distributed.@everywhere include("bsp_julia_native.jl")
 
 
     iters = 100
