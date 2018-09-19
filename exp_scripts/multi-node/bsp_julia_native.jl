@@ -1,6 +1,6 @@
 using Distributed
 using Profile
-type bsptype_julia
+mutable struct  bsptype_julia
     nprocs   :: Int64
     iters    :: Int64
     elements :: Int64
