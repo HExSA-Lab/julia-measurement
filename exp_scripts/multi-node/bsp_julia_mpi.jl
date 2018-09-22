@@ -114,7 +114,6 @@ end
 function do_computes(a)
 
     i  = Int64
-    println("In do _compute")
     for i=1:a.elements
 
     	do_flops(a)
@@ -168,7 +167,6 @@ function do_comms(a)
 end
 
 function doit_mpi(iters, elements, flops, reads, writes, comms)
-    println("here") 
     MPI.Init()
 
     bspcomm = MPI.COMM_WORLD
@@ -181,7 +179,6 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     a = bsptype(size, rank, iters, elements, flops, writes, reads, comms, bspcomm)
     
     for i=1:iters
-	println("iteration")
     	do_computes(a)
 
         print("iteration-->",i)
