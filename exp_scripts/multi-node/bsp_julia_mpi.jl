@@ -8,7 +8,7 @@ using DocOpt
 
 include("cli.jl")
 =#
-type bsptype
+mutable struct bsptype
     size     :: Int64
     rank     :: Int64
     iters    :: Int64
@@ -168,7 +168,7 @@ function do_comms(a)
 end
 
 function doit_mpi(iters, elements, flops, reads, writes, comms)
-   
+    println("here") 
     MPI.Init()
 
     bspcomm = MPI.COMM_WORLD
