@@ -114,7 +114,7 @@ end
 function do_computes(a)
 
     i  = Int64
-
+    println("In do _compute")
     for i=1:a.elements
 
     	do_flops(a)
@@ -181,14 +181,15 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     a = bsptype(size, rank, iters, elements, flops, writes, reads, comms, bspcomm)
     
     for i=1:iters
+	println("iteration")
     	do_computes(a)
 
+        print("iteration-->",i)
     #	if size==16
     #		do_ping_pong(a)
     #	end
 
         do_comms(a)
-        print("iteration-->",i)
     end
 
     println("About to finalize")
