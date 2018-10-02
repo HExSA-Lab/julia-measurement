@@ -23,11 +23,10 @@ end
 function do_flops(a)
 
     i          = Int64
-    sum        = Float64
-    x::Float64 = 1995
+    x::Float64 = 1995.1937
+    sum        = x
     val        = Float64
     mpy        = Float64
-    sum        = x
 
     if a.rank == 0
         fn_suffix = "_mpi_"*string(a.size)*".dat"
@@ -46,9 +45,9 @@ function do_flops(a)
     if a.rank == 0
         stop  = time_ns()
         write(fs,"$(stop- start)\n")
-	close(fs)
+        close(fs)
     end
-
+    sum
 end
 
 
@@ -76,6 +75,7 @@ function do_reads(a)
         write(fs,"$(stop- start)\n")
         close(fs)
     end
+    sum
 
 end
 
