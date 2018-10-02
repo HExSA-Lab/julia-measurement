@@ -48,12 +48,14 @@ logit (const char * fmt, ...)
 }
 
 
-static void 
-do_flops (struct bsp_type * a)
+double do_flops (struct bsp_type * a) __attribute__((noinline));
+
+__attribute__((noinline)) double
+do_flops (struct bsp_type * a) 
 {
     int i;
-    double x   = 1995.0;
-    double sum = x;
+    double x   = 1995.7839;
+    double sum  = x;
 
     double val;
     double mpy;
@@ -70,7 +72,7 @@ do_flops (struct bsp_type * a)
 
         if (fs == NULL) {
             fprintf(stderr, "Could not open file %s\n", filename);
-            return;
+            return -1.1;
         }
 
 	    clock_gettime(CLOCK_REALTIME, &start);
@@ -91,6 +93,8 @@ do_flops (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
+
+    return sum;
 }
 
 
@@ -134,6 +138,7 @@ do_reads (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
+    return sum;
 }
 
 
@@ -243,9 +248,6 @@ static void
 do_compute (struct bsp_type * a)
 {
     int i;
-    FILE * fs = NULL;
-    struct timespec start;
-    struct timespec end;
 
     DEBUG_PRINT(a->rank, "In compute\n");
 
