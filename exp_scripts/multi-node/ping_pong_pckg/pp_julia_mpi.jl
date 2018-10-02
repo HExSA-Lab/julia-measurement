@@ -33,7 +33,7 @@ function do_ping_pong(a)
         if a.rank == ping
             MPI.Send(arr, pong, 10, a.comm_world)
         else
-            MPI.Irecv!(arr, ping, 10, a.comm_world)
+            MPI.Recv!(arr, ping, 10, a.comm_world)
         end
 
         #PONG
@@ -41,7 +41,7 @@ function do_ping_pong(a)
         if a.rank== pong
             MPI.Send(arr, ping, 10, a.comm_world)
         else
-            MPI.Irecv!(arr, pong, 10, a.comm_world)
+            MPI.Recv!(arr, pong, 10, a.comm_world)
         end
 
         if a.rank == ping
