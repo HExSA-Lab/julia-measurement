@@ -43,7 +43,7 @@ end
 function do_reads(a)
 
     i     = Int64
-    mymem = Array{Int64}(a.reads)
+    mymem = Array{Int64}(undef,a.reads)
     sum   = Float64
     x     = Float64
 
@@ -72,7 +72,7 @@ function do_writes(a)
     x::Float64 = 93.0
     sum        = x
 
-    mymem = Array{Int64}(a.writes)
+    mymem = Array{Int64}(undef,a.writes)
 
     if myid() == workers()[1]
         fn_suffix = "_native_"*string(a.nprocs)*".dat"
@@ -110,7 +110,7 @@ end
 
 function do_comms(a)
 
-    arr = Array{Int64}(a.comms)
+    arr = Array{Int64}(undef,a.comms)
     my_id      = myid()
     master     = workers()[1]
     last_worker= workers()[nprocs()-1]
