@@ -53,7 +53,7 @@ end
 
 function do_reads(a)
 
-    mymem     = Array{Int64}(reads)
+    mymem     = Array{Int64,1}(undef, a.reads)
     sum       = Float64
     x         = Float64
     i         = Int64
@@ -85,7 +85,7 @@ function do_writes(a)
     x::Float64   = 93.0
     sum::Float64 = x
 
-    mymem = Array{Int64}(writes)
+    mymem = Array{Int64,1}(undef,a.writes)
 
 
     if a.rank == 0
@@ -127,7 +127,7 @@ end
 
 function do_comms(a)
 
-    b         = Array{Int64}(a.comms)
+    b         = Array{Int64,1}(undef, a.comms)
 
     if a.rank == a.size-1
         fwd = 0
