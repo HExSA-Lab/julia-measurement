@@ -1,6 +1,6 @@
 import MPI
 
-type bsptype
+mutable struct bsptype
     size::Int64
     rank::Int64
     iters::Int64
@@ -20,7 +20,7 @@ function do_ping_pong(a)
             file_suffix = "_"*string(i)*".dat"
             fs = open("comms_size"*file_suffix, "a")
         end
-        arr=Array{Int8}(i)
+        arr=Array{Int8,1}(undef,i)
 
         if a.rank ==ping
 
