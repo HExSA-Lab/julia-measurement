@@ -97,8 +97,9 @@ do_flops (struct bsp_type * a)
     return sum;
 }
 
+double do_reads (struct bsp_type * a) __attribute__((noinline));
 
-static void 
+__attribute__((noinline)) double
 do_reads (struct bsp_type * a)
 {
     int i;
