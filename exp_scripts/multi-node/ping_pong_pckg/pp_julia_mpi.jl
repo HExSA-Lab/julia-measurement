@@ -1,6 +1,6 @@
 import MPI
 
-type bsptype
+mutable struct bsptype
     size::Int64
     rank::Int64
     iters::Int64
@@ -20,7 +20,7 @@ function do_ping_pong(a)
             file_suffix = "_"*string(i)*".dat"
             fs = open("comms_size"*file_suffix, "a")
         end
-        arr=Array{Int8}(i)
+        arr=Array{Int8,1}(undef,i)
 
         if a.rank ==ping
 
@@ -32,20 +32,16 @@ function do_ping_pong(a)
 
         if a.rank == ping
             MPI.Send(arr, pong, 10, a.comm_world)
-            println("ping has sent")
         else
-            MPI.Irecv!(arr, ping, 10, a.comm_world)
-            println("pong has recieved")
+            MPI.Recv!(arr, ping, 10, a.comm_world)
         end
 
         #PONG
 
         if a.rank== pong
             MPI.Send(arr, ping, 10, a.comm_world)
-	    println("pong has sent")
         else
-            MPI.Irecv!(arr, pong, 10, a.comm_world)
-            println("ping has recieved")
+            MPI.Recv!(arr, pong, 10, a.comm_world)
         end
 
         if a.rank == ping

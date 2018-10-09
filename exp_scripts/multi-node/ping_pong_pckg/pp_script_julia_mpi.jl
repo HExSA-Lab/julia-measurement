@@ -1,5 +1,6 @@
+using Distributed
 import MPI
-@everywhere include("pp_julia_mpi.jl")
+Distributed.@everywhere include("pp_julia_mpi.jl")
 
     throwout = 10
     iters = 100

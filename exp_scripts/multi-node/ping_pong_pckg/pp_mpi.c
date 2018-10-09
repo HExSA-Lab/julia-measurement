@@ -57,7 +57,6 @@ static void do_ping_pong(struct bsp_type *a)
             }
            
         }
-	printf("ping done");
         /* PONG */
         if (a->rank == pong) {
             if (MPI_Send(arr, i, MPI_BYTE, ping, tag, a->comm_w) != MPI_SUCCESS) {
@@ -68,7 +67,6 @@ static void do_ping_pong(struct bsp_type *a)
                 printf("MPI_Recv (pong stage) unsuccessful\n");
             }
         }
-        printf("pong done");
         if (a->rank == ping) {
               clock_gettime(CLOCK_REALTIME, &end);
               long s_ns = start.tv_sec*1000000000 + start.tv_nsec;

@@ -9,9 +9,9 @@
 #define DEFAULT_ITER 100
 #define DEFAULT_ELM 100
 #define DEFAULT_FLOPS 1000000
-#define DEFAULT_READS 5000
-#define DEFAULT_WRITES 5000
-#define DEFAULT_COMMS 100
+#define DEFAULT_READS 5000000
+#define DEFAULT_WRITES 5000000
+#define DEFAULT_COMMS 10000
 
 #define VERSION_STRING "0.0.1"
 
@@ -48,12 +48,14 @@ logit (const char * fmt, ...)
 }
 
 
-static void 
-do_flops (struct bsp_type * a)
+double do_flops (struct bsp_type * a) __attribute__((noinline));
+
+__attribute__((noinline)) double
+do_flops (struct bsp_type * a) 
 {
     int i;
-    double x   = 1995.0;
-    double sum = x;
+    double x   = 1995.7839;
+    double sum  = x;
 
     double val;
     double mpy;
@@ -70,7 +72,7 @@ do_flops (struct bsp_type * a)
 
         if (fs == NULL) {
             fprintf(stderr, "Could not open file %s\n", filename);
-            return;
+            return -1.1;
         }
 
 	    clock_gettime(CLOCK_REALTIME, &start);
@@ -91,10 +93,13 @@ do_flops (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
+
+    return sum;
 }
 
+double do_reads (struct bsp_type * a) __attribute__((noinline));
 
-static void 
+__attribute__((noinline)) double
 do_reads (struct bsp_type * a)
 {
     int i;
@@ -134,6 +139,7 @@ do_reads (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
+    return sum;
 }
 
 
@@ -213,9 +219,7 @@ do_comms (struct bsp_type * a)
 
     for (i = 0; i < a->comms; i++) {
 
-        MPI_Request req;
-
-        if (MPI_Isend(&a1, sizeof(int), MPI_INT, neighbor_fwd, 10,a->comm_w, &req) != MPI_SUCCESS) {
+        if (MPI_Send(&a1, sizeof(int), MPI_INT, neighbor_fwd, 10,a->comm_w) != MPI_SUCCESS) {
             fprintf(stderr, "MPI_Send not successful\n");
             return;
         }
@@ -245,9 +249,6 @@ static void
 do_compute (struct bsp_type * a)
 {
     int i;
-    FILE * fs = NULL;
-    struct timespec start;
-    struct timespec end;
 
     DEBUG_PRINT(a->rank, "In compute\n");
 
@@ -261,84 +262,6 @@ do_compute (struct bsp_type * a)
 }
 
 
-static void 
-do_ping_pong (struct bsp_type * a)
-{
-    int i;
-    FILE *fs = NULL;
-    struct timespec start;
-    struct timespec end;
-    int tag = 10;
-
-    /* bi-directional test, only two ranks supported */
-    int ping = 0;
-    int pong = 1;
-
-    DEBUG_PRINT(a->rank, "in ping pong %d\n", a->rank);
-
-    for (i = MIN_PING_PONG_SIZE; i <= MAX_PING_PONG_SIZE; i *= 2) {
-
-        unsigned char *arr = malloc(i);
-        if (!arr) {
-            fprintf(stderr, "Could not allocate array in %s\n", __func__);
-            return;
-        }
-
-        /* start timer */
-        if (a->rank == ping) {
-            char filename[sizeof "comm_size_c_16.dat"];
-            sprintf(filename,"comm_size_c_%d.dat", i);
-            fs = fopen(filename,"a");
-            clock_gettime(CLOCK_REALTIME, &start);
-        }
-
-        /* PING */
-        if (a->rank == ping) {
-            if (MPI_Send(arr, i, MPI_BYTE, pong, tag, a->comm_w) != MPI_SUCCESS) {
-                fprintf(stderr, "MPI_Send (ping stage) unsuccessful\n");
-                return;
-            }
-        } else if (a->rank == pong) {
-            if (MPI_Recv(arr, i, MPI_BYTE, ping, tag, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
-                fprintf(stderr, "MPI_Recv (ping stage) unsuccessful\n");
-                return;
-            }
-           
-        }
-
-        DEBUG_PRINT(a->rank, "ping done\n");
-
-        /* PONG */
-        if (a->rank == pong) {
-            if (MPI_Send(arr, i, MPI_BYTE, ping, tag, a->comm_w) != MPI_SUCCESS) {
-                fprintf(stderr, "MPI_Send (pong stage) unsuccessful\n");
-                return;
-            }
-        } else if (a->rank == ping) {
-            if (MPI_Recv(arr, i, MPI_BYTE, pong, tag, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
-                fprintf(stderr, "MPI_Recv (pong stage) unsuccessful\n");
-                return;
-            }
-        }
-
-        DEBUG_PRINT(a->rank, "pong done\n");
-
-        if (a->rank == ping) {
-              clock_gettime(CLOCK_REALTIME, &end);
-              long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
-              long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
-              fprintf(fs,"%lu\n", e_ns - s_ns);
-              fclose(fs);
-          }
-
-        /* synch up before trial for next buffer size */
-        MPI_Barrier(a->comm_w);
-    }
-
-    MPI_Barrier(a->comm_w);
-
-    DEBUG_PRINT(a->rank, "out of ping pong\n");
-}
 
 
 static void 

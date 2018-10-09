@@ -1,3 +1,4 @@
+using Distributed
 if myid()==1
-    rmprocs()
+    Distributed.rmprocs()
 end

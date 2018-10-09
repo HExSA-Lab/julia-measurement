@@ -1,20 +1,13 @@
-#=
-#!/usr/bin/julia
-
-using DocOpt
-
-include("cli.jl")
-=#
-
-
-type bsptype_julia
-    nprocs   :: Int64
-    iters    :: Int64
-    elements :: Int64
-    flops    :: Int64
-    reads    :: Int64
-    writes   :: Int64
-    comms    :: Int64
+using Distributed
+using Profile
+mutable struct  bsptype_julia
+    nprocs   
+    iters    
+    elements 
+    flops    
+    reads    
+    writes   
+    comms   
 end
 
 
@@ -53,7 +46,7 @@ end
 function do_reads(a)
 
     i     = Int64
-    mymem = Array{Int64}(a.reads)
+    mymem = Array{Int64}(undef,a.reads)
     sum   = Float64
     x     = Float64
 
@@ -85,10 +78,11 @@ function do_writes(a)
     x::Float64 = 93.0
     sum        = x
 
+    mymem = Array{Int64}(undef,a.writes)
     my_id      = my_id()
     master     = workers()[1]
 
-    mymem = Array{Int64}(a.writes)
+
 
     if my_id == master
         fn_suffix = "_native_"*string(a.nprocs)*".dat"
@@ -126,7 +120,10 @@ end
 
 function do_comms(a)
 
-    arr = Array{Int64}(a.comms)
+    arr = Array{Int64}(undef,a.comms)
+    my_id      = myid()
+    master     = workers()[1]
+    last_worker= workers()[nprocs()-1]
 
     my_id      = my_id()
     master     = workers()[1]
@@ -141,8 +138,8 @@ function do_comms(a)
 
     for i = 1 : a.comms
         for p in workers()
-            if p == workers()[nprocs()-1]
-                @sync @spawnat(workers()[1], arr)
+            if p == last_worker
+                @sync @spawnat(master, arr)
             else
                 @sync @spawnat(p+1, arr) # sending a to workers p+1 from worker p
             end
@@ -178,7 +175,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     close(hostfile)
 
-    @everywhere include("bsp_julia_native.jl")
+    Distributed.@everywhere include("bsp_julia_native.jl")
     a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
     println("Starting exeoriment")
 
@@ -196,7 +193,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
     rmprocs(workers())
 end
 #=
-# arg parsing
+arg parsing
 args = docopt(doc, version=v"0.0.1")
 
 procs  = parse(Int, args["--nprocs"])
@@ -207,6 +204,6 @@ reads  = parse(Int, args["--reads"])
 writes = parse(Int, args["--writes"])
 comms  = parse(Int, args["--comms"])
 
-# actual invocation
+ actual invocation
 doit(procs, iters, elms, flops, reads, writes, comms)
 =#

@@ -7,5 +7,5 @@ while read -r mchnames
 do
 	name="$mchnames"
 	echo $name
-	ssh -qn cc@$name "cd /home/cc/julia-measurement/exp_scripts/multi-node; git pull; mpicc -o bsp_mpi bsp_mpi.c;"
+	ssh -qn cc@$name "cd /home/cc/julia-measurement/exp_scripts/multi-node; git pull; mpicc -O3 bsp_mpi.c;cd ping_pong_pckg; mpicc -O3 pp_mpi.c;"
 done < "$filename"
