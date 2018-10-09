@@ -17,8 +17,11 @@ function do_flops(a)
     sum        = x
     val        = Float64
     mpy        = Float64
+
+    my_id      = my_id()
+    master     = workers()[1]
     
-    if myid() == workers()[1]
+    if my_id == master
         fn_suffix = "_native_"*string(a.nprocs)*".dat"
         mn        = "flops"*fn_suffix
         ms        = open(mn, "a")
@@ -32,7 +35,7 @@ function do_flops(a)
     	sum = sum + mpy*val
     end
 
-    if myid() == workers()[1]
+    if my_id == master
         stop  = time_ns()
         write(ms,"$(stop- start)\n")
         close(ms)
@@ -47,7 +50,10 @@ function do_reads(a)
     sum   = Float64
     x     = Float64
 
-    if myid() == workers()[1]
+    my_id      = my_id()
+    master     = workers()[1]
+
+    if my_id == master
         fn_suffix = "_native_"*string(a.nprocs)*".dat"
         mn        = "reads"*fn_suffix
         ms        = open(mn, "a")
@@ -59,7 +65,7 @@ function do_reads(a)
 	    sum = mymem[i]
     end
 
-    if myid() == workers()[1]
+    if my_id == master
         stop  = time_ns()
         write(ms,"$(stop- start)\n")
         close(ms)
@@ -73,8 +79,12 @@ function do_writes(a)
     sum        = x
 
     mymem = Array{Int64}(undef,a.writes)
+    my_id      = my_id()
+    master     = workers()[1]
 
-    if myid() == workers()[1]
+
+
+    if my_id == master
         fn_suffix = "_native_"*string(a.nprocs)*".dat"
         mn        = "writes"*fn_suffix
         ms        = open(mn, "a")
@@ -86,7 +96,7 @@ function do_writes(a)
     	mymem[i] = sum
     end
 
-    if myid() == workers()[1]
+    if my_id == master
         stop  = time_ns()
         write(ms,"$(stop- start)\n")
         close(ms)
@@ -115,9 +125,12 @@ function do_comms(a)
     master     = workers()[1]
     last_worker= workers()[nprocs()-1]
 
+    my_id      = my_id()
+    master     = workers()[1]
 
-        # time here
-    if my_id== 1
+
+    # time here
+    if my_id == master
             fn_suffix = "_native_"*string(a.nprocs)*".dat"
             fs = open("comms"*fn_suffix, "a")
             start = time_ns()
@@ -133,8 +146,8 @@ function do_comms(a)
         end
     end
 
-        # time here
-    if my_id == 1
+    # time here
+    if my_id == master
         stop  = time_ns()
         write(fs, "$(stop- start)\n")
         close(fs)
