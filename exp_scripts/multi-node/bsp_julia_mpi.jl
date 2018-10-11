@@ -1,4 +1,7 @@
+#= For Julia version 0.7 or higher 
 using Distributed
+=#
+
 #=
 #!/usr/bin/julia
 
@@ -8,7 +11,11 @@ using DocOpt
 
 include("cli.jl")
 =#
+
+#= FOR JULIA VERSION 0.7 OR HIGHER
 mutable struct bsptype
+=#
+type bsptype
     size     :: Int64
     rank     :: Int64
     iters    :: Int64
@@ -53,7 +60,11 @@ end
 
 function do_reads(a)
 
+    #= FOR JULIA VERSION 0.7 OR HIGHER
     mymem     = Array{Int64,1}(undef, a.reads)
+    =#
+   
+    mymem     = Array{Int64,1}(a.reads)
     sum       = Float64
     x         = Float64
     i         = Int64
@@ -85,7 +96,10 @@ function do_writes(a)
     x::Float64   = 93.0
     sum::Float64 = x
 
-    mymem = Array{Int64,1}(undef,a.writes)
+    #= FOR JULIA VERSION 0.7 OR HIGHER
+    mymem     = Array{Int64,1}(undef, a.writes)
+    =#
+    mymem = Array{Int64,1}(a.writes)
 
 
     if a.rank == 0
@@ -127,7 +141,10 @@ end
 
 function do_comms(a)
 
-    b         = Array{Int64,1}(undef, a.comms)
+    #= FOR JULIA VERSION 0.7 OR HIGHER
+    b	      = Array{Int64,1}(undef, a.comms)
+    =#
+    b         = Array{Int64,1}(a.comms)
 
     if a.rank == a.size-1
         fwd = 0
@@ -151,7 +168,10 @@ function do_comms(a)
     # do the actual communication phase
     for i=1:a.comms
         MPI.Send(b, fwd, 10, a.comm_world)
+	#= FOR JULIA VERSION 0.7 OR HIGHER 
         a1 = Array{Int64,1}(undef, a.comms)
+	=#
+        a1 = Array{Int64,1}(a.comms)
         MPI.Recv!(a1, bck, 10, a.comm_world)
     end
 
@@ -171,6 +191,9 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
 
     bspcomm = MPI.COMM_WORLD
 
+    #= FOR JULIA VERSION 0.7 OR HIGHER 
+    Distributed.@everywhere include("bsp_julia_mpi.jl")
+    =#
     Distributed.@everywhere include("bsp_julia_mpi.jl")
 
     rank = MPI.Comm_rank(bspcomm)

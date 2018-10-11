@@ -1,6 +1,9 @@
+#= For julia version 0.7 or higher 
 using Distributed
 using Profile
 mutable struct  bsptype_julia
+=#
+type bsptype_julia 
     nprocs   
     iters    
     elements 
@@ -18,7 +21,7 @@ function do_flops(a)
     val        = Float64
     mpy        = Float64
 
-    my_id      = my_id()
+    my_id      = myid()
     master     = workers()[1]
     
     if my_id == master
@@ -46,11 +49,14 @@ end
 function do_reads(a)
 
     i     = Int64
+    #= For julia version 0.7 or higher 
     mymem = Array{Int64}(undef,a.reads)
+    =#
+    mymem = Array{Int64}(a.reads)
     sum   = Float64
     x     = Float64
 
-    my_id      = my_id()
+    my_id      = myid()
     master     = workers()[1]
 
     if my_id == master
@@ -78,8 +84,11 @@ function do_writes(a)
     x::Float64 = 93.0
     sum        = x
 
+    #= For julia version 0.7 or higher 
     mymem = Array{Int64}(undef,a.writes)
-    my_id      = my_id()
+    =#
+    mymem = Array{Int64}(a.writes)
+    my_id      = myid()
     master     = workers()[1]
 
 
@@ -120,12 +129,15 @@ end
 
 function do_comms(a)
 
+    #= For julia version 0.7 or higher 
     arr = Array{Int64}(undef,a.comms)
+    =#
+    arr = Array{Int64}(a.comms)
     my_id      = myid()
     master     = workers()[1]
     last_worker= workers()[nprocs()-1]
 
-    my_id      = my_id()
+    my_id      = myid()
     master     = workers()[1]
 
 
