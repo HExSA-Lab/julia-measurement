@@ -122,6 +122,7 @@ function do_writes(a)
         write(fs,"$(stop- start)\n")
         close(fs)
     end
+    mymem
 end
 
 

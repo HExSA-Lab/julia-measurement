@@ -34,7 +34,7 @@ function do_flops(a)
     # do the actual floating point math
     for i=1 : a.flops
     	val = x
-	    mpy = x
+	mpy = x
     	sum = sum + mpy*val
     end
 
@@ -43,6 +43,7 @@ function do_flops(a)
         write(ms,"$(stop- start)\n")
         close(ms)
     end
+    sum 
 end
 
 
@@ -76,6 +77,7 @@ function do_reads(a)
         write(ms,"$(stop- start)\n")
         close(ms)
     end
+    sum
 end
 
 
@@ -110,7 +112,7 @@ function do_writes(a)
         write(ms,"$(stop- start)\n")
         close(ms)
     end
-
+    mymem
 end
 
 
@@ -120,7 +122,7 @@ function do_compute(a)
 
     for i=1:a.elements
     	do_flops(a)
-	    do_reads(a)
+	do_reads(a)
     	do_writes(a)
     end
 

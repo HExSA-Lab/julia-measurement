@@ -143,7 +143,9 @@ do_reads (struct bsp_type * a)
 }
 
 
-static void 
+int * do_writes (struct bsp_type * a) __attribute__((noinline));
+
+__attribute__((noinline)) int *
 do_writes (struct bsp_type * a)
 {
     int i;
@@ -179,6 +181,7 @@ do_writes (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
+    return arr;
 }
 
 
