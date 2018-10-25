@@ -195,7 +195,7 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     for i=1:iters
         for p in workers()
-            remote_do(do_compute, p, a)
+            @sync remote_do(do_compute, p, a)
         end
 
 	    do_comms(a)
