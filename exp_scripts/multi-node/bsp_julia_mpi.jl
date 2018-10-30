@@ -211,7 +211,7 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     #		do_ping_pong(a)
     #	end
 
-        do_comms(a)
+    #    do_comms(a)
     end
 
     println("About to finalize")
