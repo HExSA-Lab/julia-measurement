@@ -4,13 +4,15 @@ using Profile
 mutable struct  bsptype_julia
 =#
 type bsptype_julia 
-    nprocs   
-    iters    
-    elements 
-    flops    
-    reads    
-    writes   
-    comms   
+    nprocs::Int64   
+    iters::Int64    
+    elements::Int64 
+    flops::Int64    
+    reads::Int64    
+    writes::Int64   
+    comms::Int64   
+    my_id::Int64
+    size::Int64
 end
 
 
@@ -135,38 +137,36 @@ function do_comms(a)
     arr = Array{Int64}(undef,a.comms)
     =#
     arr = Array{Int64}(a.comms)
-    my_id      = myid()
-    master     = workers()[1]
-    last_worker= workers()[nprocs()-1]
+    my_id      = a.my_id
+    master     = procs()[1]
+    last_worker= workers()[nworkers()]
 
-    my_id      = myid()
-    master     = workers()[1]
 
 
     # time here
-    if my_id == master
+    if my_id == master 
             fn_suffix = "_native_"*string(a.nprocs)*".dat"
-            fs = open("comms"*fn_suffix, "a")
-            start = time_ns()
+            fn ="comms"*fn_suffix
+	    fs = remote_do(open, master, fn , "a")
+           # start = remotecall_fetch(time_ns, master)
+	    start  =remote_do(time_ns, master)
     end
-
     for i = 1 : a.comms
-        for p in workers()
-            if p == last_worker
+            if my_id == last_worker
                 @sync @spawnat(master, arr)
             else
-                @sync @spawnat(p+1, arr) # sending a to workers p+1 from worker p
+                @sync @spawnat(my_id+1, arr) # sending a to workers p+1 from worker p
             end
-        end
     end
 
     # time here
     if my_id == master
-        stop  = time_ns()
-        write(fs, "$(stop- start)\n")
-        close(fs)
-    end
-
+#        stop  = remotecall_fetch(time_ns, master)
+ 	stop = remote_do(time_ns, master)
+	elapsed = stop-start
+        remote_do(write, master, fs, "$elapsed\n")
+        remote_do(close,master, fs)
+   end
 
 end
 
@@ -182,25 +182,31 @@ function doit(nprocs, iters, elements, flops, reads, writes, comms)
 
     seekstart(hostfile)
 
-    for i=1:lines-1
+    for i=1:lines
         machine_name = strip(readuntil(hostfile, '\n'))
-        addprocs([(machine_name, nprocs)])
+	if machine_name=="mpi-instance-0"
+		addprocs(nprocs-1)
+	else
+        	addprocs([(machine_name, nprocs)])
+	end
     end 
 
     close(hostfile)
-
+    size = nworkers()+1
+    println("Processes Done ---->",size)
     Distributed.@everywhere include("bsp_julia_native.jl")
-    a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms)
-    println("Starting exeoriment")
+    for p in procs()
+	my_id = remotecall_fetch(()->myid(),p)
+    	a = bsptype_julia(nprocs, iters, elements, flops,reads, writes, comms, my_id, size)
+    	println("Starting experiment")
 
-    for i=1:iters
-        for p in workers()
+    	for i=1:iters
             @sync remote_do(do_compute, p, a)
+	    @sync remote_do(do_comms, p, a)
+            #println("iteration ---->", i)
         end
 
-	    do_comms(a)
 
-        println("iteration ---->", i)
 
     end
 
