@@ -429,7 +429,7 @@ main (int argc, char ** argv)
 
     do_it(iter, elm, flops, reads, writes, comms, rank, size);
 
-    MPI_Finalize();
+    MPI_Abort();
 
     return 0;
 }
