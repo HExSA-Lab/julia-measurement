@@ -183,8 +183,8 @@ function do_commus(a)
 
     if  a.rank == 0
         stop      = time_ns()
-	println("$(stop-start)\n")
-        #remote_do(write,0,fs,"$(stop- start)\n")
+#	println("$(stop-start)\n")
+        remote_do(write,0,fs,"$(stop- start)\n")
         close(fs)
     end
     a1
