@@ -52,7 +52,7 @@ function do_flops(a)
 
     if a.rank == 0
         stop  = time_ns()
-        write(fs,"$(stop- start)\n")
+	write(fs,"$(stop-start)\n")
         close(fs)
     end
     sum
@@ -141,7 +141,8 @@ function do_computes(a)
 end
 
 
-function do_comms(a)
+function do_commus(a)
+   println("do_comms")
 
     #= FOR JULIA VERSION 0.7 OR HIGHER
     b	      = Array{Int64,1}(undef, a.comms)
@@ -182,10 +183,11 @@ function do_comms(a)
 
     if  a.rank == 0
         stop      = time_ns()
-        write(fs,"$(stop- start)\n")
+	println("$(stop-start)\n")
+        #remote_do(write,0,fs,"$(stop- start)\n")
         close(fs)
     end
-
+    a1
 end
 
 function doit_mpi(iters, elements, flops, reads, writes, comms)
@@ -206,12 +208,8 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     for i=1:iters
     	do_computes(a)
 
-        print("iteration-->",i)
-    #	if size==16
-    #		do_ping_pong(a)
-    #	end
 
-    #    do_comms(a)
+        do_commus(a)
     end
 
     println("About to finalize")
