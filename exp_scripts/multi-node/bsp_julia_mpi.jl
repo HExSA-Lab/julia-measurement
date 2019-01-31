@@ -52,7 +52,7 @@ function do_flops(a)
 
     if a.rank == 0
         stop  = time_ns()
-	write(fs,"$(stop-start)\n")
+        fetch(@spawnat(1, write(fs,"$(stop- start)\n")))
         close(fs)
     end
     sum
@@ -84,7 +84,7 @@ function do_reads(a)
 
     if a.rank == 0
         stop      = time_ns()
-        write(fs,"$(stop- start)\n")
+        fetch(@spawnat(1, write(fs,"$(stop- start)\n")))
         close(fs)
     end
     sum
@@ -120,7 +120,7 @@ function do_writes(a)
 
     if a.rank == 0
         stop       = time_ns()
-        write(fs,"$(stop- start)\n")
+        fetch(@spawnat(1, write(fs,"$(stop- start)\n")))
         close(fs)
     end
     mymem
@@ -184,7 +184,7 @@ function do_commus(a)
     if  a.rank == 0
         stop      = time_ns()
 #	println("$(stop-start)\n")
-        remote_do(write,1,fs,"$(stop- start)\n")
+        fetch(@spawnat(1, write(fs,"$(stop- start)\n")))
         close(fs)
     end
     a1
