@@ -148,6 +148,10 @@ function do_commus(a)
     b	      = Array{Int64,1}(undef, a.comms)
     =#
     b         = Array{Int64,1}(a.comms)
+    #= FOR JULIA VERSION 0.7 OR HIGHER 
+    a1 = Array{Int64,1}(undef, a.comms)
+    =#
+    a1 = Array{Int64,1}(a.comms)
 
     if a.rank == a.size-1
         fwd = 0
@@ -171,10 +175,6 @@ function do_commus(a)
     # do the actual communication phase
     for i=1:a.comms
         MPI.Send(b, fwd, 10, a.comm_world)
-	#= FOR JULIA VERSION 0.7 OR HIGHER 
-        a1 = Array{Int64,1}(undef, a.comms)
-	=#
-        a1 = Array{Int64,1}(a.comms)
         MPI.Recv!(a1, bck, 10, a.comm_world)
     end
 

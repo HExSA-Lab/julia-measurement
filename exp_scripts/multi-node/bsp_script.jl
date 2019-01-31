@@ -13,5 +13,4 @@ Distributed.@everywhere include("bsp_julia_mpi.jl")
     comms = 10000
 #    doit(iters,elements, flops, reads, writes,comms)    
     doit_mpi(iters,elements, flops, reads, writes,comms)    
-    println(workers())
     rmprocs(workers())
