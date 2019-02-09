@@ -1,4 +1,2 @@
 #!/usr/bin/env bash
-julia -e Pkg.add\(\"MPI\"\)
-julia -e Pkg.build\(\"MPI\"\)
-julia -e Pkg.update\(\)
+julia -e 'import Pkg; Pkg.add.(["MPI", "Compat", "Statistics", "Distributed"]); Pkg.update()'
