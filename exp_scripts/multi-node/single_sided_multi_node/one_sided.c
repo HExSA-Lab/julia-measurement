@@ -268,7 +268,7 @@ do_it (int iters,
     for (j = 0; j < iters; j++) {
 //	do_sized_puts(&a);
 //	do_sized_gets(&a);
-        do_gets(&a);
+//        do_gets(&a);
 	do_puts(&a);
 
         DEBUG_PRINT(rank, "Communication done in %s\n", __func__);
