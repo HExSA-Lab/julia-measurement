@@ -80,6 +80,50 @@ function win_get(a)
 		println(rank, " ----> ",received)
 	end
 end
+function put_size(a)
+    	min = 8
+    	max = 1024*1024
+	rank = a.rank
+	N = a.N
+	comm = a.comm
+	win = MPI.Win()
+	gets = a.gets
+	received = fill(-1,N)
+    	i = min
+    	while i <= max
+        	buf=Array{Int8,1}(undef,i)
+		MPI.Win_create(buf, MPI.INFO_NULL, comm, win)
+		MPI.Win_fence(0, win)
+        	if a.rank == 1
+            		file_suffix = "_"*string(i)*".dat"
+            		fs = open("put_size"*file_suffix, "a")
+        	      	start = time_ns()
+	        end
+
+		for j = 1:gets
+			if rank==N-1
+				MPI.Put(received, 0, win)
+				MPI.Win_fence(0, win)
+			else 
+				MPI.Put(received, (rank+1), win)
+				MPI.Win_fence(0, win)
+			end	
+		end
+		MPI.Barrier(comm)
+
+        	if a.rank == 1
+
+            	# end timer print out result
+            		stop  = time_ns()
+	        	Distributed.fetch(Distributed.@spawnat(1, write(fs,"$(stop- start)\n")))
+            		close(fs)
+            		println("time written")
+       	 	end
+    		i = i *2
+    
+   	 end
+end
+
 function get_size(a)
     	min = 8
     	max = 1024*1024
@@ -131,10 +175,12 @@ function driver(iters, gets, puts)
 	comm = MPI.COMM_WORLD
 	a = wintype(rank, N, iters, gets, puts, comm)
 	for i = 1:iters
-	#	win(a)
+		win_put(a)
+		win_get(a)
+		put_size(a)
 		get_size(a)
 	end
 	MPI.Finalize()
 end
 
-driver(100, 10000000, 1000000)
+driver(100, 50000, 50000)
