@@ -121,7 +121,7 @@ do_sized_puts (struct bsp_type * a)
 
     	if (a->rank == 0){
         	char filename[sizeof "get_c_size_655360.dat"];
-	        sprintf(filename, "get_c_size_%d.dat", i);
+	        sprintf(filename, "put_c_size_%d.dat", i);
         	fs = fopen(filename,"a");
         	clock_gettime(CLOCK_REALTIME, &start);
     	}
@@ -170,7 +170,7 @@ do_puts (struct bsp_type * a)
 
     if (a->rank == 1){
         char filename[sizeof "get_c_128.dat"];
-        sprintf(filename, "get_c_%d.dat", a->size);
+        sprintf(filename, "put_c_%d.dat", a->size);
         fs = fopen(filename,"a");
         clock_gettime(CLOCK_REALTIME, &start);
     }
