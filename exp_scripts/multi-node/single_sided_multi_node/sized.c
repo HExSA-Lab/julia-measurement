@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -45,105 +46,107 @@ logit (const char * fmt, ...)
 
 
 static void 
-do_puts (struct bsp_type * a)
+do_sized_gets (struct bsp_type * a)
 {
-    printf("in do_getsi\n");
     int a1;
-    int i;
+    int i, j;
     int fwd;
     FILE *fs;
     struct timespec start;
     struct timespec end;
     MPI_Win win;
-    
-    unsigned char *buf_arr = malloc(a->size);
-    unsigned char *rcv_arr = malloc(a->size);
-    MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    MPI_Win_fence(0,win);
-
+    unsigned char *rcv_arr = malloc(i);
     if (a->rank== a->size-1)
-         fwd = 0;
+        fwd = 0;
     else
-         fwd = a->rank+1;
+        fwd = a->rank+1;
+    
+    for (i = MIN_SIZE; i <= MAX_SIZE; i *= 2) {
 
-    if (a->rank == 1){
-        char filename[sizeof "get_c_128.dat"];
-        sprintf(filename, "put_c_%d.dat", a->size);
-        fs = fopen(filename,"a");
-        clock_gettime(CLOCK_REALTIME, &start);
-    }
+    	unsigned char *buf_arr = malloc(i);
+    	MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    	MPI_Win_fence(0,win);
 
-    for (i = 0; i < a->puts; i++) {
-        MPI_Put(rcv_arr, a->size, MPI_CHAR, fwd, 0, a->size, MPI_CHAR, win);
-	MPI_Win_fence(0,win);
 
-   }
+    	if (a->rank == 0){
+        	char filename[sizeof "get_c_size_655360.dat"];
+	        sprintf(filename, "get_c_size_%d.dat", i);
+        	fs = fopen(filename,"a");
+        	clock_gettime(CLOCK_REALTIME, &start);
+    	}
+
+    	for (j = 0; j < a->gets; j++) {
+        	MPI_Get(rcv_arr,i, MPI_CHAR, fwd, 0, i, MPI_CHAR, win);
+		MPI_Win_fence(0,win);
+
+   	}	
 
     	MPI_Barrier(a->comm_w);
 
 
-    if (a->rank == 1) {
-        clock_gettime(CLOCK_REALTIME, &end);
-        long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
-        long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
-        fprintf(fs, "%lu\n", e_ns - s_ns);
-        fclose(fs);
-    }
+    	if (a->rank == 0) {
+        	clock_gettime(CLOCK_REALTIME, &end);
+        	long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+        	long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+	        fprintf(fs, "%lu\n", e_ns - s_ns);
+	        fclose(fs);
+    	}
+    } 
     rcv_arr;
    
 }
+
 
 static void 
-do_gets (struct bsp_type * a)
+do_sized_puts (struct bsp_type * a)
 {
-    printf("in do_getsi\n");
     int a1;
-    int i;
+    int i, j;
     int fwd;
     FILE *fs;
     struct timespec start;
     struct timespec end;
     MPI_Win win;
-    
-    unsigned char *buf_arr = malloc(a->size);
-    unsigned char *rcv_arr = malloc(a->size);
-    MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    MPI_Win_fence(0,win);
-
+    unsigned char *rcv_arr = malloc(i);
     if (a->rank== a->size-1)
-         fwd = 0;
+        fwd = 0;
     else
-         fwd = a->rank+1;
+        fwd = a->rank+1;
+    
+    for (i = MIN_SIZE; i <= MAX_SIZE; i *= 2) {
 
-    if (a->rank == 0){
-        char filename[sizeof "get_c_128.dat"];
-        sprintf(filename, "get_c_%d.dat", a->size);
-        fs = fopen(filename,"a");
-        clock_gettime(CLOCK_REALTIME, &start);
-    }
+    	unsigned char *buf_arr = malloc(i);
+    	MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    	MPI_Win_fence(0,win);
 
-    for (i = 0; i < a->gets; i++) {
-        MPI_Get(rcv_arr, a->size, MPI_CHAR, fwd, 0, a->size, MPI_CHAR, win);
-	MPI_Win_fence(0,win);
 
-   }
+    	if (a->rank == 0){
+        	char filename[sizeof "get_c_size_655360.dat"];
+	        sprintf(filename, "put_c_size_%d.dat", i);
+        	fs = fopen(filename,"a");
+        	clock_gettime(CLOCK_REALTIME, &start);
+    	}
+
+    	for (j = 0; j < a->puts; j++) {
+        	MPI_Put(rcv_arr,i, MPI_CHAR, fwd, 0, i, MPI_CHAR, win);
+		MPI_Win_fence(0,win);
+
+   	}	
 
     	MPI_Barrier(a->comm_w);
 
 
-    if (a->rank == 0) {
-        clock_gettime(CLOCK_REALTIME, &end);
-        long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
-        long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
-        fprintf(fs, "%lu\n", e_ns - s_ns);
-        fclose(fs);
-    }
+    	if (a->rank == 0) {
+        	clock_gettime(CLOCK_REALTIME, &end);
+        	long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
+        	long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+	        fprintf(fs, "%lu\n", e_ns - s_ns);
+	        fclose(fs);
+    	}
+    } 
     rcv_arr;
    
 }
-
-
-
 
 
 static void 
@@ -164,8 +167,8 @@ do_it (int iters,
     struct bsp_type a = {size, rank, iters, gets, puts,  MPI_COMM_WORLD};
 
     for (j = 0; j < iters; j++) {
-        do_gets(&a);
-	do_puts(&a);
+	do_sized_puts(&a);
+	do_sized_gets(&a);
 
         DEBUG_PRINT(rank, "Communication done in %s\n", __func__);
 
