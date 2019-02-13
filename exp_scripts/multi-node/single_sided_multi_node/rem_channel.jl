@@ -1,4 +1,5 @@
 using Distributed
+using Statistics
 
 
 mutable struct rem_obj
@@ -48,7 +49,8 @@ function measure_put_channel(a::rem_obj)
 	if my_id == 1
 		fs  = open("rem_put_size_"*string(chan_size)*".dat", "a")
 		mean  = Statistics.mean(lat[throwout+1:throwout+iters]) 
-		Distributed.fetch(Distributed.@spawnat(1, write(fs, "$mean\n")))
+		write(fs, "$mean\n")
+		close(fs)
 	end
 end
 
@@ -87,10 +89,11 @@ function measure_take_channel(a::rem_obj)
 		end
 	end
 	if my_id == 1
-		fs  = open("rem_take_size_"*string(chan_size)*".dat", "a")
-		mean  = Statistics.mean(lat[throwout+1:throwout+iters]) 
-		Distributed.fetch(Distributed.@spawnat(1, write(fs, "$mean\n")))
-		close(fs)
+		open("rem_take_size_"*string(chan_size)*".dat", "a") do fs
+			mean  = Statistics.mean(lat[throwout+1:throwout+iters]) 
+			write(fs, "$mean\n")
+			close(fs)
+		end
 	end
 
 end
