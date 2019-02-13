@@ -25,9 +25,9 @@ function measure_put_channel(a::rem_obj)
 	master    = a.master
 	last      = a.last
 	if my_id == last
-		ch = RemoteChannel(()->Channel(Int8)(chan_size, master))
+		ch = RemoteChannel(()->Channel{Int}(chan_size, master))
 	else
-		ch = RemoteChannel(()->Channel(Int8)(chan_size, my_id))
+		ch = RemoteChannel(()->Channel{Int}(chan_size, my_id))
 	end
 	println("allocated")
 	lat = Array{Int64,1}(undef, itersi+throwout)
@@ -57,12 +57,18 @@ end
 #
 function measure_take_channel(a::rem_obj)
 
-	chan_size =a.chan_size
-	iters= a.gets
-	throwout=a.throwout
-	ch = RemoteChannel(()->Channel{Int8}(undef, chan_size))
+	chan_size = a.chan_size
+	iters     = a.puts
+	throwout  = a.throwout
+	master    = a.master
+	last      = a.last
+	if my_id == last
+		ch = RemoteChannel(()->Channel{Int}(chan_size, master))
+	else
+		ch = RemoteChannel(()->Channel{Int}(chan_size, my_id))
+	end
 	println("allocated")
-	lat = Array{Int64,1}(undef, iters)
+	lat = Array{Int64,1}(undef, itersi+throwout)
 
 	for i = 1:throwout+iters
 		put!(ch, 1)
