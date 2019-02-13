@@ -135,8 +135,8 @@ function doit(throwout, nprocs, iters, puts, gets)
     		println("Starting experiment")
 
     		for i=1:iters
-            		@sync Distributed.remote_do(measure_take_channel, p,a)
-#	    		@sync Distributed.remote_do(measure_put_channel, p, a)
+#            		@sync Distributed.remote_do(measure_take_channel, p,a)
+	    		@sync Distributed.remote_do(measure_put_channel, p, a)
             	#println("iteration ---->", i)
         	end
 
