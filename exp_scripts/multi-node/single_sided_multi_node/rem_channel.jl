@@ -46,8 +46,8 @@ function measure_put_channel(a::rem_obj)
 		take!(ch)
 	end
 	if my_id == 1
-		fs  = open("rem_size_"*string(chan_size)*".dat", "a")
-		Distributed.remotecall_fetch(println, 1,fs, Statistics.mean(lat[throwout+1:throwout+iters]))
+		fs  = open("rem_put_size_"*string(chan_size)*".dat", "a")
+		Distributed.remotecall_fetch(write, 1,fs, Statistics.mean(lat[throwout+1:throwout+iters]))
 	end
 end
 
@@ -86,8 +86,8 @@ function measure_take_channel(a::rem_obj)
 		end
 	end
 	if my_id == 1
-		fs  = open("rem_size_"*string(chan_size)*".dat", "a")
-		Distributed.remotecall_fetch(println, 1,fs, Statistics.mean(lat[throwout+1:throwout+iters]))
+		fs  = open("rem_take_size_"*string(chan_size)*".dat", "a")
+		Distributed.remotecall_fetch(write, 1,fs, Statistics.mean(lat[throwout+1:throwout+iters]))
 		close(fs)
 	end
 
