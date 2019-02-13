@@ -2,9 +2,10 @@ using Distributed
 
 
 mutable struct rem_obj
+	throwout::Int64
 	puts::Int64
-	my_id::Int64
 	gets::Int64
+	my_id::Int64
 	chan_size::Int64
 end
 
@@ -14,10 +15,14 @@ end
 #	@iters : number of iterations 
 # 	@throwout : number of iterations to throwout 
 #
-function measure_put_channel(throwout, iters, chan_size)
+function measure_put_channel(a::rem_obj)
 
+	chan_size =a.chan_size
+	iters= a.iters
+	throwout=a.throwout
 	ch = RemoteChannel(()->Channel{Int8}(undef, chan_size))
-	lat = Array{Int64,1}(undef, iters)
+	println("allocated")
+	lat = Array{Int64,1}(undef, itersi+throwout)
 
 	for i = 1:throwout+iters
 		if  a.my_id == 1
@@ -42,8 +47,11 @@ end
 # TODO: may want to consider having another worker put on the channel
 # We may be eliding locking by doing this from one process.
 #
-function measure_take_channel(throwout, iters, chan_size)
+function measure_take_channel(a::rem_obj)
 
+	chan_size =a.chan_size
+	iters= a.iters
+	throwout=a.throwout
 	ch = RemoteChannel(()->Channel{Int8}(undef, chan_size))
 	lat = Array{Int64,1}(undef, iters)
 
@@ -64,7 +72,7 @@ function measure_take_channel(throwout, iters, chan_size)
 end
 
 
-function doit(nprocs, iters, puts, gets)
+function doit(throwout, nprocs, iters, puts, gets)
 
     hostfile = open("myhosts", "r")
     lines    = 0
@@ -95,12 +103,12 @@ function doit(nprocs, iters, puts, gets)
    
    	for p in Distributed.procs()
 		my_id = Distributed.remotecall_fetch(()->myid(),p)
-    		a = rem_obj(puts,gets,my_id,i)
+    		a = rem_obj(throwout,puts,gets,my_id,i)
     		println("Starting experiment")
 
     		for i=1:iters
-            		@sync Distributed.remote_do(measure_get_channel, p, a)
-	    		@sync Distributed.remote_do(measure_put_channel, p, a)
+            		@sync Distributed.remote_do(measure_take_channel, p,a)
+#	    		@sync Distributed.remote_do(measure_put_channel, p, a)
             	#println("iteration ---->", i)
         	end
 
