@@ -122,7 +122,7 @@ function doit(throwout, nprocs, iters, puts, gets)
     min = 8
     max = 1024*1024
     i = min
-    while (i<max)
+    while (i<max+1)
    
    	for p in Distributed.procs()
 		my_id = Distributed.remotecall_fetch(()->myid(),p)
