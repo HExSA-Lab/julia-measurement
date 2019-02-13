@@ -48,7 +48,7 @@ function put_size(a)
 
         	if a.rank == 1
 
-			mean = mean(lat)
+			mean = Statistics.mean(lat)
             		file_suffix = "_"*string(i)*".dat"
             		open("win_put_size"*file_suffix, "a") do fs
 				write(fs, "$mean\n")
@@ -95,7 +95,7 @@ function get_size(a)
        	 		end
 		end
 		if a.rank == 1
-			mean = mean(lat)
+			mean = Statistics.mean(lat)
             		file_suffix = "_"*string(i)*".dat"
             		open("win_get_size"*file_suffix, "a") do fs
 	        		write(fs,"$mean\n")
