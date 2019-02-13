@@ -7,6 +7,8 @@ mutable struct rem_obj
 	gets::Int64
 	my_id::Int64
 	chan_size::Int64
+	master::Int64
+	last::Int64
 end
 
 
@@ -17,10 +19,16 @@ end
 #
 function measure_put_channel(a::rem_obj)
 
-	chan_size =a.chan_size
-	iters= a.puts
-	throwout=a.throwout
-	ch = RemoteChannel(()->Channel{Int8}(undef, chan_size))
+	chan_size = a.chan_size
+	iters     = a.puts
+	throwout  = a.throwout
+	master    = a.master
+	last      = a.last
+	if my_id == last
+		ch = RemoteChannel(()->Channel(Int8)(chan_size, master))
+	else
+		ch = RemoteChannel(()->Channel(Int8)(chan_size, my_id))
+	end
 	println("allocated")
 	lat = Array{Int64,1}(undef, itersi+throwout)
 
@@ -53,10 +61,12 @@ function measure_take_channel(a::rem_obj)
 	iters= a.gets
 	throwout=a.throwout
 	ch = RemoteChannel(()->Channel{Int8}(undef, chan_size))
+	println("allocated")
 	lat = Array{Int64,1}(undef, iters)
 
 	for i = 1:throwout+iters
 		put!(ch, 1)
+		println("put")
 		if  a.my_id == 1
 			s = time_ns()
 		end
@@ -95,6 +105,7 @@ function doit(throwout, nprocs, iters, puts, gets)
     close(hostfile)
     size = Distributed.nworkers()+1
     println("Processes Done ---->",size)
+    master = 1
     Distributed.@everywhere include("/home/cc/julia-measurement/exp_scripts/multi-node/single_sided_multi_node/rem_channel.jl")
     min = 8
     max = 1024*1024
@@ -103,7 +114,7 @@ function doit(throwout, nprocs, iters, puts, gets)
    
    	for p in Distributed.procs()
 		my_id = Distributed.remotecall_fetch(()->myid(),p)
-    		a = rem_obj(throwout,puts,gets,my_id,i)
+    		a = rem_obj(throwout,puts,gets,my_id,i, master, size)
     		println("Starting experiment")
 
     		for i=1:iters
