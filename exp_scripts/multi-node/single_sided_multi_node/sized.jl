@@ -1,3 +1,14 @@
+using MPI
+using Statistics
+
+mutable struct wintype
+	rank::Int64
+	N::Int64
+	iters::Int64
+	gets::Int64
+	puts::Int64
+	comm
+end
 
 function put_size(a)
     	min = 8
@@ -13,13 +24,12 @@ function put_size(a)
         	buf=Array{Int8,1}(undef,i)
 		MPI.Win_create(buf, MPI.INFO_NULL, comm, win)
 		MPI.Win_fence(0, win)
-        	if a.rank == 1
-            		file_suffix = "_"*string(i)*".dat"
-            		fs = open("put_size"*file_suffix, "a")
-        	      	start = time_ns()
-	        end
+		lat  = Array{Float64}(undef,gets) 
 
 		for j = 1:gets
+        		if a.rank == 1
+        	      		start = time_ns()
+	        	end
 			if rank==N-1
 				MPI.Put(received, 0, win)
 				MPI.Win_fence(0, win)
@@ -27,16 +37,23 @@ function put_size(a)
 				MPI.Put(received, (rank+1), win)
 				MPI.Win_fence(0, win)
 			end	
+		
+        		if a.rank == 1
+            		# end timer print out result
+            			stop  = time_ns()
+				lat[j] = start-stop
+			end
 		end
 		MPI.Barrier(comm)
 
         	if a.rank == 1
 
-            	# end timer print out result
-            		stop  = time_ns()
-	        	Distributed.fetch(Distributed.@spawnat(1, write(fs,"$(stop- start)\n")))
-            		close(fs)
-            		println("time written")
+			mean = mean(lat)
+            		file_suffix = "_"*string(i)*".dat"
+            		open("win_put_size"*file_suffix, "a") do fs
+				write(fs, "$mean\n")
+            			close(fs)
+			end
        	 	end
     		i = i *2
     
@@ -57,13 +74,12 @@ function get_size(a)
         	buf=Array{Int8,1}(undef,i)
 		MPI.Win_create(buf, MPI.INFO_NULL, comm, win)
 		MPI.Win_fence(0, win)
-        	if a.rank == 1
-            		file_suffix = "_"*string(i)*".dat"
-            		fs = open("win_size"*file_suffix, "a")
-        	      	start = time_ns()
-	        end
+		lat  = Array{Float64}(undef,gets) 
 
 		for j = 1:gets
+        		if a.rank == 1
+        	      		start = time_ns()
+	    		end
 			if rank==N-1
 				MPI.Get(received, 0, win)
 				MPI.Win_fence(0, win)
@@ -71,17 +87,23 @@ function get_size(a)
 				MPI.Get(received, (rank+1), win)
 				MPI.Win_fence(0, win)
 			end	
+        		if a.rank == 1
+
+            			# end timer print out result
+            			stop  = time_ns()
+				lat[j]  = stop-start
+       	 		end
+		end
+		if a.rank == 1
+			mean = mean(lat)
+            		file_suffix = "_"*string(i)*".dat"
+            		open("win_get_size"*file_suffix, "a") do fs
+	        		write(fs,"$mean\n")
+            			close(fs)
+   			end
 		end
 		MPI.Barrier(comm)
 
-        	if a.rank == 1
-
-            	# end timer print out result
-            		stop  = time_ns()
-	        	Distributed.fetch(Distributed.@spawnat(1, write(fs,"$(stop- start)\n")))
-            		close(fs)
-            		println("time written")
-       	 	end
     		i = i *2
     
    	 end
