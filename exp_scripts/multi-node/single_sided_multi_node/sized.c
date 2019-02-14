@@ -13,7 +13,7 @@
 
 #define VERSION_STRING "0.0.1"
 
-#define MIN_SIZE 8 // in bytes
+#define MIN_SIZE 2048 // in bytes
 #define MAX_SIZE (1024*1024) // up to 1MB
 
 #define DEBUG_PRINT(rank, fmt, args...) \
