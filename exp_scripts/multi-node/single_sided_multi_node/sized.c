@@ -13,7 +13,7 @@
 
 #define VERSION_STRING "0.0.1"
 
-#define MIN_SIZE 2048 // in bytes
+#define MIN_SIZE 8 // in bytes
 #define MAX_SIZE (1024*1024) // up to 1MB
 
 #define DEBUG_PRINT(rank, fmt, args...) \
@@ -62,10 +62,11 @@ do_sized_gets (struct bsp_type * a)
 		fwd = a->rank+1;
 
 	for (i = MIN_SIZE; i <= MAX_SIZE; i *= 2) {
-
+		printf("about to create\n");
 		unsigned char *buf_arr = malloc(i);
 		MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
 		MPI_Win_fence(0,win);
+		printf("%d\n", i);
 		float sum =0.0;
 
 
