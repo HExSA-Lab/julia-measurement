@@ -55,7 +55,6 @@ do_sized_gets (struct bsp_type * a)
 	struct timespec start;
 	struct timespec end;
 	MPI_Win win;
-	unsigned char *rcv_arr = malloc(i);
 	if (a->rank== a->size-1)
 		fwd = 0;
 	else
@@ -64,6 +63,7 @@ do_sized_gets (struct bsp_type * a)
 	for (i = MIN_SIZE; i <= MAX_SIZE; i *= 2) {
 		printf("about to create\n");
 		unsigned char *buf_arr = malloc(i);
+		unsigned char *rcv_arr = malloc(i);
 		MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
 		MPI_Win_fence(0,win);
 		printf("%d\n", i);
@@ -114,7 +114,6 @@ do_sized_puts (struct bsp_type * a)
 	struct timespec start;
 	struct timespec end;
 	MPI_Win win;
-	unsigned char *rcv_arr = malloc(i);
 	if (a->rank== a->size-1)
 		fwd = 0;
 	else
@@ -123,6 +122,7 @@ do_sized_puts (struct bsp_type * a)
 	for (i = MIN_SIZE; i <= MAX_SIZE; i *= 2) {
 		float sum =0.0;
 		unsigned char *buf_arr = malloc(i);
+		unsigned char *rcv_arr = malloc(i);
 		MPI_Win_create(buf_arr, a->size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
 		MPI_Win_fence(0,win);
 
@@ -181,7 +181,6 @@ do_it (int iters,
 	for (j = 0; j < iters; j++) {
 	//	do_sized_puts(&a);
 		do_sized_gets(&a);
-
 		DEBUG_PRINT(rank, "Communication done in %s\n", __func__);
 
 	}
