@@ -99,7 +99,7 @@ do_sized_gets (struct bsp_type * a)
 		//MPI_Barrier(a->comm_w);
 		//MPI_Win_free(&win);
 	} 
-	rcv_arr;
+	avg;
 
 }
 
@@ -156,7 +156,7 @@ do_sized_puts (struct bsp_type * a)
 		//MPI_Barrier(a->comm_w);
 		//MPI_Win_free(&win);
 	} 
-	rcv_arr;
+	avg;
 
 }
 
