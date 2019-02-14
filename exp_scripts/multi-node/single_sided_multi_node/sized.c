@@ -54,6 +54,7 @@ do_sized_gets (struct bsp_type * a)
 	FILE *fs;
 	struct timespec start;
 	struct timespec end;
+	float avg;
 	MPI_Win win;
 	if (a->rank== a->size-1)
 		fwd = 0;
@@ -86,7 +87,7 @@ do_sized_gets (struct bsp_type * a)
 			}
 		}	
 
-		double avg = sum/a->gets;
+		avg = sum/a->gets;
 		MPI_Barrier(a->comm_w);
 
 		if (a->rank == 0) {
@@ -113,6 +114,7 @@ do_sized_puts (struct bsp_type * a)
 	FILE *fs;
 	struct timespec start;
 	struct timespec end;
+	float avg;
 	MPI_Win win;
 	if (a->rank== a->size-1)
 		fwd = 0;
@@ -142,7 +144,7 @@ do_sized_puts (struct bsp_type * a)
 				sum += e_ns - s_ns;
 			}
 		}	
-		double avg = sum/a->puts;
+		avg = sum/a->puts;
 		MPI_Barrier(a->comm_w);
 
 
