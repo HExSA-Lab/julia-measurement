@@ -39,12 +39,12 @@ function measure_put_channel(a::rem_obj)
 		if  a.my_id == 1
 			s = time_ns()
 		end
-		put!(ch, 1)
+		@sync put!(ch, 1)
 		if  a.my_id == 1
 			e = time_ns()
 			lat[i] = e - s
 		end
-		take!(ch)
+		@sync take!(ch)
 	end
 	if my_id == 1
 		fs  = open("rem_put_size_"*string(chan_size)*".dat", "a")
@@ -78,11 +78,11 @@ function measure_take_channel(a::rem_obj)
 	lat = Array{Int64,1}(undef, iters+throwout)
 
 	for i = 1:throwout+iters
-		put!(ch, 1)
+		@sync	put!(ch, 1)
 		if  a.my_id == 1
 			s = time_ns()
 		end
-		take!(ch)
+		@sync take!(ch)
 		if  a.my_id == 1
 			e = time_ns()
 			lat[i] = e - s
