@@ -181,7 +181,7 @@ do_it (int iters,
 	struct bsp_type a = {size, rank, iters, gets, puts,  MPI_COMM_WORLD};
 
 	for (j = 0; j < iters; j++) {
-	//	do_sized_puts(&a);
+		do_sized_puts(&a);
 		do_sized_gets(&a);
 		DEBUG_PRINT(rank, "Communication done in %s\n", __func__);
 
