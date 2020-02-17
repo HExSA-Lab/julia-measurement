@@ -1,6 +1,6 @@
-import MPI
+using  MPI
 using Distributed
-Distributed.@everywhere include("bsp_julia_mpi.jl")
+@everywhere include("bsp_julia_mpi.jl")
 
 
     iters = 100
