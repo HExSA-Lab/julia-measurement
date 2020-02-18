@@ -1,6 +1,6 @@
 using  MPI
 using Distributed
-include("bsp_julia_mpi.jl")
+Distributed.@everywhere include("bsp_julia_mpi.jl")
 
 
     iters = 100
