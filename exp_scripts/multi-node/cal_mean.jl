@@ -6,6 +6,15 @@ lines    	= countlines(index_file)
 seekstart(index_file)
 println("Parameters: Flops  :  Reads :  Writes :  Comms :  Iterations : ")
 println("Filename\t\t Mean \t\t Median \t\t Std.Dev \t\t Maximum\n ")
+#=
+dataframe 
+lang, nproc, op, median
+JULIA, 14, reads, 
+
+
+
+=#
+
 
 for i=1:lines-1
       file_name = strip(readuntil(index_file, '\n'))
