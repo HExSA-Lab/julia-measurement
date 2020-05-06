@@ -29,28 +29,21 @@ function measure_parfor(iters, throwout, size, nprocs)
 
     a = SharedArray{Int}(size)
     
-    times = Array{Int64}(iters)
+    times = Array{Int64,1}(undef, iters+throwout)
 
-    for i=1:throwout
+    for i=1:throwout+iters
         s = time_ns()
-        @sync @parallel for j=1:size
-            a[j] = j
-        end
-        e = time_ns()
-    end
-
-    for i=1:iters
-        s = time_ns()
-        @sync @parallel for j=1:size
+        @sync @distributed for j=1:size
             a[j] = j
         end
         e = time_ns()
         times[i] = e - s
     end
 
+
     rmprocs(workers())
 
-    times
+    times[throwout+1:throwout+iters]
 
 end
 
@@ -78,13 +71,14 @@ function measure_pmap(iters, throwout, size, nprocs)
 
     addprocs(nprocs)
     @everywhere include("parfor.jl")
-    arr = Array{Int64}(size)
-    times = Array{Int64}(iters)
+    arr = Array{Int64,1}(undef, size)
+    times = Array{Int64,1}(undef, iters+throwout)
     seg_no = nprocs +1
-    for i=1:throwout
+
+    for i=1:iters+throwout
         s = time_ns()
         seg_size = Int(floor(size/seg_no))
-        segmented_arr = Array{Array{Int64}}(seg_no)
+        segmented_arr = Array{Array{Int64}}(undef, seg_no)
          for i = 1:seg_no
             start =(i-1)*seg_size+1
              if i == seg_no
@@ -97,30 +91,12 @@ function measure_pmap(iters, throwout, size, nprocs)
         c= pmap(init_sub_array, segmented_arr)
         arr_joined = vcat(c...)
         e = time_ns()
-
-    end
-
-    for i=1:iters
-        s = time_ns()
-        seg_size = Int(floor(size/seg_no))
-        segmented_arr = Array{Array{Int64}}(seg_no)
-         for i = 1:seg_no
-            start =(i-1)*seg_size+1
-             if i == seg_no
-                stop= size
-            else
-                stop = i*seg_size
-            end
-            segmented_arr[i]=arr[start:stop]
-        end
-        c= pmap(init_sub_array, segmented_arr)
-        arr_joined = vcat(c...)
-        e = time_ns()
+	times[i] = e-s
     end
 
     rmprocs(workers())
 
-    times
+    times[throwout+1:throwout+iters]
 
 end
 
@@ -136,17 +112,9 @@ function measure_thread_for(iters, throwout, size)
 
     a = SharedArray{Int}(size)
     
-    times = Array{Int64}(iters)
+    times = Array{Int64,1}(undef,iters+throwout)
 
-    for i=1:throwout
-        s = time_ns()
-        @sync Threads.@threads for j=1:size
-            a[j] = j
-        end
-        e = time_ns()
-    end
-
-    for i=1:iters
+    for i=1:throwout+iters
         s = time_ns()
         @sync Threads.@threads for j=1:size
             a[j] = j
@@ -155,6 +123,7 @@ function measure_thread_for(iters, throwout, size)
         times[i] = e - s
     end
 
-    times
+
+    times[throwout+1:throwout+iters]
 
 end

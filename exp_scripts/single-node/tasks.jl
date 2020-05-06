@@ -8,16 +8,9 @@
 #
 function measure_task_create_tput(f, iters, throwout, creations)
     # array of task creations per second
-    tcps = Array{Float64}(iters)
+    tcps = Array{Float64,1}(undef,iters+throwout)
 
-    for i = 1:throwout
-        s = time_ns()
-        tsk = Task(f)
-        schedule(tsk)
-        e = time_ns()
-    end
-
-    for i = 1:iters
+    for i = 1:throwout+iters
         s = time_ns()
         for j = 1:creations
             tsk = Task(f)
@@ -27,7 +20,7 @@ function measure_task_create_tput(f, iters, throwout, creations)
         tcps[i] = creations*1000000000 / ((e - s))
     end
     
-    tcps
+    tcps[throwout+1:throwout+iters]
 
 end
 
@@ -44,7 +37,7 @@ end
 function measure_task_switching(iters)
 
     # array of task switching latency
-	tsl = Array{Float64}(iters)
+	tsl = Array{Float64,1}(undef,iters)
 
 	# create two tasks
 	tsk1 = Task(ctx_switch_task)	
