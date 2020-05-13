@@ -14,7 +14,7 @@ static void do_ping_pong(struct bsp_type *a);
 
 
 #define MIN_PING_PONG_SIZE 8 // in bytes
-#define MAX_PING_PONG_SIZE (1024*1024) // up to 1MB
+#define MAX_PING_PONG_SIZE (512*1024) // up to 1MB
 
 static void do_ping_pong(struct bsp_type *a)
 {
