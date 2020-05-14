@@ -16,9 +16,11 @@ static void do_ping_pong(struct bsp_type *a);
 #define MIN_PING_PONG_SIZE 8 // in bytes
 #define MAX_PING_PONG_SIZE (512*1024) // up to 1MB
 
+#define FNAME_MAX 128
+
 static void do_ping_pong(struct bsp_type *a)
 {
-    printf("in ping pong %d", a->rank);
+    printf("in ping pong %d\n", a->rank);
     int i;
     FILE *fs = NULL;
     struct timespec start;
@@ -40,10 +42,14 @@ static void do_ping_pong(struct bsp_type *a)
 
         /* start timer */
         if (a->rank == ping) {
-            char filename[sizeof "comm_size_c_16.dat"];
-            sprintf(filename,"comm_size_c_%d.dat", i);
+            char filename[FNAME_MAX] = {0};
+            snprintf(filename, FNAME_MAX, "comm_size_c_%d.dat", i);
             fs = fopen(filename,"a");
-              clock_gettime(CLOCK_REALTIME, &start);
+	    if (!fs) {
+		    fprintf(stderr, "Could not open dat file\n");
+		    return;
+	    }
+	    clock_gettime(CLOCK_REALTIME, &start);
           }
 
         /* PING */
@@ -67,6 +73,7 @@ static void do_ping_pong(struct bsp_type *a)
                 printf("MPI_Recv (pong stage) unsuccessful\n");
             }
         }
+
         if (a->rank == ping) {
               clock_gettime(CLOCK_REALTIME, &end);
               long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
@@ -76,12 +83,14 @@ static void do_ping_pong(struct bsp_type *a)
           }
 
         /* synch up before trial for next buffer size */
-        MPI_Barrier(a->comm_w);
-      }
-    MPI_Barrier(a->comm_w);
-    printf("out of ping pong");
+        //MPI_Barrier(a->comm_w);
+	MPI_Barrier(MPI_COMM_WORLD);
+    }
+    //MPI_Barrier(a->comm_w);
+    printf("out of ping pong\n");
 
-  }
+}
+
 static void do_pp(int iters, int throwout)
 {
     
@@ -95,12 +104,13 @@ static void do_pp(int iters, int throwout)
     MPI_Get_processor_name(processorname,&max_len);
 
     printf("Hello world!  I am process number: %d on processor %s\n", rank, processorname);
-    printf("Damn");
     struct bsp_type a = { size, rank, iters, MPI_COMM_WORLD};
     for (j =0; j<iters+throwout;j++) {
             do_ping_pong(&a);
     }
 }
+
+
 int 
 main (int argc, char ** argv)
 {
