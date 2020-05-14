@@ -14,9 +14,9 @@
 function measure_atomic_set(iters, throwout)
     
     x = Base.Threads.Atomic{Int}(0)
-    lats = Array{Int64}(iters)
+    lats = Array{Int64,1}(undef, throwout+iters)
 
-    for i=1:throwout
+    for i=1:throwout+iters
         s = time_ns()
         x[] = 1
         e = time_ns()
@@ -24,15 +24,8 @@ function measure_atomic_set(iters, throwout)
         lats[i] = e - s
     end
 
-    for i=1:iters
-        s = time_ns()
-        x[] = 1
-        e = time_ns()
-        x[] = 0
-        lats[i] = e - s
-    end
 
-    lats
+    lats[throwout+1:throwout+iters]
 
 end
 
@@ -49,10 +42,10 @@ end
 #
 function measure_atomic_cas(throwout, iters, def, compare, set)
 
-	macas =  Array{Int64}(iters)
+	macas =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_cas!(x,compare,set)
@@ -61,15 +54,7 @@ function measure_atomic_cas(throwout, iters, def, compare, set)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_cas!(x,compare,set)
-		e = time_ns()
-		macas[i] = e - s
-	
-	end
-	macas
+	macas[throwout+1:iters+throwout]
 end
 
 #
@@ -85,10 +70,10 @@ end
 
 function measure_atomic_xchng(throwout, iters, def , newval)
 
-	m_xchng =  Array{Int64}(iters)
+	m_xchng =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_xchg!(x,newval)
@@ -97,15 +82,7 @@ function measure_atomic_xchng(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_xchg!(x,newval)
-		e = time_ns()
-		m_xchng[i] = e - s
-	
-	end
-	m_xchng
+	m_xchng[throwout+1:iters+throwout]
 end
 
 ##
@@ -119,10 +96,10 @@ end
 #
 function measure_atomic_add(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_add!(x,newval)
@@ -131,15 +108,7 @@ function measure_atomic_add(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_add!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:throwout+iters]
 end
 
 
@@ -154,10 +123,10 @@ end
 #
 function measure_atomic_subtract(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, throwout+iters)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_sub!(x,newval)
@@ -166,15 +135,7 @@ function measure_atomic_subtract(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_sub!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:iters+throwout]
 end
 
 #
@@ -188,10 +149,10 @@ end
 #
 function measure_atomic_or(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_or!(x,newval)
@@ -200,15 +161,7 @@ function measure_atomic_or(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_or!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:throwout+iters]
 end
 
 #
@@ -222,10 +175,10 @@ end
 #
 function measure_atomic_and(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_and!(x,newval)
@@ -234,15 +187,7 @@ function measure_atomic_and(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_and!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:iters+throwout]
 end
 
 #
@@ -256,10 +201,10 @@ end
 #
 function measure_atomic_xor(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_xor!(x,newval)
@@ -268,15 +213,7 @@ function measure_atomic_xor(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_xor!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:iters+throwout]
 end
 
 #
@@ -290,10 +227,10 @@ end
 #
 function measure_atomic_nand(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_nand!(x,newval)
@@ -302,15 +239,7 @@ function measure_atomic_nand(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_nand!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:throwout+iters]
 end
 
 #
@@ -324,10 +253,10 @@ end
 #
 function measure_atomic_max(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_max!(x,newval)
@@ -336,15 +265,7 @@ function measure_atomic_max(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_max!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:iters+throwout]
 end
 
 #
@@ -358,10 +279,10 @@ end
 #
 function measure_atomic_min(throwout, iters, def , newval)
 
-	lat =  Array{Int64}(iters)
+	lat =  Array{Int64,1}(undef, iters+throwout)
 	x = Threads.Atomic{Int}(def)
 
-	for i = 1: throwout
+	for i = 1: throwout+iters
 	
 		s = time_ns()
 		Threads.atomic_min!(x,newval)
@@ -370,13 +291,5 @@ function measure_atomic_min(throwout, iters, def , newval)
 	
 	end
 	
-	for i = 1: iters
-	
-		s = time_ns()
-		Threads.atomic_min!(x,newval)
-		e = time_ns()
-		lat[i] = e - s
-	
-	end
-	lat
+	lat[throwout+1:iters+throwout]
 end

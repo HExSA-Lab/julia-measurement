@@ -23,27 +23,19 @@
 #
 function measure_spawn_on(f, iters, throwout)
 
-	latencies = Array{UInt64}(iters)
+	latencies = Array{Float64, 1}(undef, iters+throwout)
 
-	for i = 1:throwout
+	for i = 1:throwout+iters
 		s = time_ns()
-		fut = @spawn(f)
-		@fetch(f)
+		fetch(@spawn(f))
 		e = time_ns()
-	end
-
-	for i = 1:iters
-		s = time_ns()
-		fut = @spawn(f)
-		e = time_ns()
-		@fetch(fut)
 		latencies[i] = e - s
 	end
 
-	return latencies
+	return latencies[throwout+1:iters+throwout]
 
 end
-
+#=
 #
 # This function measures the cost of a fetch that is
 # preceded by a standard @spawn call.
@@ -58,16 +50,14 @@ function measure_fetch_on(f, iters, throwout)
 	latencies = Array{UInt64}(iters)
 
 	for i = 1:throwout
-		fut = @spawn(f)
 		s = time_ns()
-		@fetch(fut)
+		fetch(@spawn(f))
 		e = time_ns()
 	end
 
 	for i = 1:iters
-		fut = @spawn(f)
 		s = time_ns()
-		@fetch(fut)
+		@fetch(@spawn(f))
 		e = time_ns()
 		latencies[i] = e - s
 	end
@@ -109,3 +99,4 @@ function measure_spawn_at_on(f, proc, iters)
 	return latencies
 
 end
+=#

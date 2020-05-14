@@ -1,9 +1,12 @@
-#include all files
+#include all files.
+using Distributed
+using SharedArrays
+include("../../funcs_and_tasks/tunable_funcs.jl")
 include("atomics.jl")
 include("driver.jl")
 include("procs.jl")
 include("tasks.jl")
-include("intr.jl")
+#include("intr.jl")
 include("channels.jl")
 include("synch.jl")
 include("cond.jl")
@@ -16,8 +19,8 @@ global CREATIONS   = 1000
 global FUNCTION = dummy
 global SIZE = 50000000
 =#
-function benchmark_julia_performance(f, throwout,iters, creations, proc_creations, chan_size, nprocs, size, def, newval, set, compare )
-	
+function benchmark_julia_performance( throwout,iters, creations, proc_creations, chan_size, nprocs, size, def, newval, set, compare )
+	f = dummy
 	println("#measure task throughput")
 
 	a = measure_task_create_tput(f, iters, throwout, creations)
@@ -31,14 +34,14 @@ function benchmark_julia_performance(f, throwout,iters, creations, proc_creation
 	writedlm("../../plotting_and_reporting/data/julia_task_switching.dat", a)
 
 	println("#####################")
-
+#=
 	println("#measure condition notify")
 
 	a = measure_notify_condition(throwout, iters)
 	writedlm("../../plotting_and_reporting/data/julia_notify_condition.dat", a)
 
 	println("#####################")
-
+=#
 	println("#measure channels -put take fetch")
 
 
@@ -75,7 +78,7 @@ function benchmark_julia_performance(f, throwout,iters, creations, proc_creation
 	writedlm("../../plotting_and_reporting/data/julia_pmap.dat",a)
 
 	println("##################### pmap")
-	
+
 	println("#measure parallel for ")
 
 	a = measure_parfor(iters,throwout, size, nprocs)
@@ -216,5 +219,5 @@ function benchmark_julia_performance(f, throwout,iters, creations, proc_creation
 end
 
 
-#function benchmark_julia_performance(f, throwout,iterations, creations, chan_size, nprocs, size, def, newval, set, compare )
-benchmark_julia_performance(dummy, 10, 100, 100, 2, 2, 32, 2, 1, 1, 1 )
+#function benchmark_julia_performance(throwout,iterations, creations, chan_size, nprocs, size, def, newval, set, compare )
+benchmark_julia_performance( 		10         , 100    , 100     ,2 , 2        , 32  , 2  , 1   , 1     , 1  ,2)

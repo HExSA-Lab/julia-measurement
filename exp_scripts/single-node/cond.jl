@@ -33,16 +33,16 @@ end
 # TODO: assumption is iters > throwout
 function measure_notify_condition(throwout, iters)
 
-    lats = Array{Int64}(iters)
+    lats = Array{Int64,1}(undef, iters+throwout)
 
-    put!(work, throwout)
+    put!(work, throwout+iters)
 
     # run it on a different core
     @async remote_do(waitonit, 2, work, res, wait)
 
     # remote proc is now waiting 
 
-    for i=1:throwout
+    for i=1:throwout+iters
 
         s = time_ns()
 
@@ -53,26 +53,11 @@ function measure_notify_condition(throwout, iters)
         lats[i] = e - s
         
     end
-
+    rmprocs(workers())
     # remote worker is dead now, revive it
 
-    put!(work, iters)
 
-    @async remote_do(waitonit, 2, work, res, wait)
-    
-    for i=1:iters
-
-        s = time_ns()
-
-        put!(wait, 1)
-
-        e = take!(res)
-            
-        lats[i] = e - s
-        
-    end
-
-    lats
+    lats[throwout+1:throwout+iters]
     
 end
 

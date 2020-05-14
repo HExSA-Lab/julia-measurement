@@ -21,7 +21,7 @@
 #define DEFAULT_FETCH_TYPE TYPE_NULL
 #define DEFAULT_FETCH_STR  "null"
 #define DEFAULT_FIB_ARG    20
-
+#define DEFAULT_CREATIONS  100 
 
 static void*
 thread_create_func (void * in)
@@ -54,12 +54,13 @@ fib (void * in)
  *
  */
 static void
-measure_thread_create (unsigned throwout, unsigned trials)
+measure_thread_create (unsigned throwout, unsigned trials, unsigned creations)
 {
     pthread_t t;
     struct timespec start;
     struct timespec end;
     int i;
+    int j;
 
     for (i = 0; i < throwout + trials; i++) {
 
@@ -73,16 +74,17 @@ measure_thread_create (unsigned throwout, unsigned trials)
         pthread_attr_setaffinity_np(&attr, sizeof(cpuset), &cpuset);
 
         clock_gettime(CLOCK_REALTIME, &start);
-
-        pthread_create(&t, &attr, thread_create_func, NULL);
+	for (j=0; j< creations; j++)
+		pthread_create(&t, &attr, thread_create_func, NULL);
 
         clock_gettime(CLOCK_REALTIME, &end);
 
         long s_ns = start.tv_sec*1000000000 + start.tv_nsec;
         long e_ns = end.tv_sec*1000000000 + end.tv_nsec;
+        double denom = 	e_ns- s_ns;
 
         if (i >= throwout) {
-            printf("%lu\n", e_ns - s_ns);
+            printf("%f\n", creations*1000000000/denom);
         }
 
         usleep(100);
@@ -145,6 +147,7 @@ usage (char * prog)
 
     printf("  -t, --trials <trial count> : number of experiments to run (default=%d)\n", DEFAULT_TRIALS);
     printf("  -k, --throwout <throwout count> : number of iterations to throw away (default=%d)\n", DEFAULT_THROWOUT);
+    printf("  -p, --creations <creations count> : number of creations to run (default=%d)\n", DEFAULT_CREATIONS);
     printf("  -h, ---help : display this message\n");
     printf("  -v, --version : display the version number and exit\n");
 
@@ -180,6 +183,7 @@ main (int argc, char ** argv)
 {
     unsigned trials   = DEFAULT_TRIALS;
     unsigned throwout = DEFAULT_THROWOUT;
+    unsigned creations= DEFAULT_CREATIONS;
     int exp_id        = DEFAULT_EXP;
     int fetch_type    = DEFAULT_FETCH_TYPE;
     long fibarg       = DEFAULT_FIB_ARG;
@@ -194,6 +198,7 @@ main (int argc, char ** argv)
         static struct option lopts[] = {
             {"trials", required_argument, 0, 't'},
             {"throwout", required_argument, 0, 'k'},
+	    {"creations", required_argument, 0, 'p'},
             {"create", no_argument, 0, 'c'},
             {"fetch", no_argument, 0, 'f'},
             {"fetch-type", required_argument, 0, 'e'},
@@ -203,7 +208,7 @@ main (int argc, char ** argv)
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "t:k:ce:b:fhv", lopts, &optidx);
+        c = getopt_long(argc, argv, "t:k:p:ce:b:fhv", lopts, &optidx);
 
         if (c == -1) {
             break;
@@ -215,6 +220,9 @@ main (int argc, char ** argv)
                 break;
             case 'k':
                 throwout = atoi(optarg);
+                break;
+            case 'p':
+                creations = atoi(optarg);
                 break;
             case 'c':
                 exp_id = EXP_CREATE;
@@ -254,9 +262,10 @@ main (int argc, char ** argv)
     printf("# Output is in ns\n");
     printf("# %d trials\n", trials);
     printf("# %d throwout\n", throwout);
+    printf("# %d creations\n", creations);
 
     if (exp_id == EXP_CREATE) {
-        measure_thread_create(throwout, trials);
+        measure_thread_create(throwout, trials, creations);
     } else if (exp_id == EXP_FETCH) {
 
         if (fetch_type == TYPE_NULL) {
