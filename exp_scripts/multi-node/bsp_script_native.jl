@@ -1,5 +1,8 @@
+#= For version 0.7 or above in Julia
 using Distributed
 Distributed.@everywhere include("bsp_julia_native.jl")
+=#
+@everywhere include("bsp_julia_native.jl")
 
 
     iters = 100
