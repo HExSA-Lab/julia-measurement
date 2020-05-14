@@ -20,7 +20,7 @@ function do_ping_pong(a)
             file_suffix = "_"*string(i)*".dat"
             fs = open("comms_size"*file_suffix, "a")
         end
-        arr=Array{Int8,1}(undef,i)
+        arr=Array{Int8,1}(i)
 
         if a.rank ==ping
 
