@@ -14,7 +14,7 @@ static void do_ping_pong(struct bsp_type *a);
 
 
 #define MIN_PING_PONG_SIZE 8 // in bytes
-#define MAX_PING_PONG_SIZE (512*1024) // up to 1MB
+#define MAX_PING_PONG_SIZE (1024*1024) // up to 1MB
 
 #define FNAME_MAX 128
 
@@ -30,6 +30,7 @@ static void do_ping_pong(struct bsp_type *a)
     /* bi-directional test, only two ranks supported */
     int ping = 0;
     int pong = 1;
+    int j = 1;
 
     for (i = MIN_PING_PONG_SIZE; i <= MAX_PING_PONG_SIZE; i *= 2) {
 
@@ -54,22 +55,22 @@ static void do_ping_pong(struct bsp_type *a)
 
         /* PING */
         if (a->rank == ping) {
-            if (MPI_Send(arr, i, MPI_BYTE, pong, tag, a->comm_w) != MPI_SUCCESS) {
+            if (MPI_Send(arr, i, MPI_BYTE, pong, tag+j, a->comm_w) != MPI_SUCCESS) {
                 fprintf(stderr, "MPI_Send (ping stage) unsuccessful\n");
             }
         } else if (a->rank == pong) {
-            if (MPI_Recv(arr, i, MPI_BYTE, ping, tag, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+            if (MPI_Recv(arr, i, MPI_BYTE, ping, tag+j, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
                 fprintf(stderr, "MPI_Recv (ping stage) unsuccessful\n");
             }
            
         }
         /* PONG */
         if (a->rank == pong) {
-            if (MPI_Send(arr, i, MPI_BYTE, ping, tag, a->comm_w) != MPI_SUCCESS) {
+            if (MPI_Send(arr, i, MPI_BYTE, ping, tag-j, a->comm_w) != MPI_SUCCESS) {
                 printf("MPI_Send (pong stage) unsuccessful\n");
             }
         } else if (a->rank == ping) {
-            if (MPI_Recv(arr, i, MPI_BYTE, pong, tag, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+            if (MPI_Recv(arr, i, MPI_BYTE, pong, tag-j, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
                 printf("MPI_Recv (pong stage) unsuccessful\n");
             }
         }
@@ -85,6 +86,7 @@ static void do_ping_pong(struct bsp_type *a)
         /* synch up before trial for next buffer size */
         //MPI_Barrier(a->comm_w);
 	MPI_Barrier(MPI_COMM_WORLD);
+	j++;
     }
     //MPI_Barrier(a->comm_w);
     printf("out of ping pong\n");
