@@ -66,11 +66,11 @@ static void do_ping_pong(struct bsp_type *a)
         }
         /* PONG */
         if (a->rank == pong) {
-            if (MPI_Send(arr, i, MPI_BYTE, ping, tag-j, a->comm_w) != MPI_SUCCESS) {
+            if (MPI_Send(arr, i, MPI_BYTE, ping, tag*j, a->comm_w) != MPI_SUCCESS) {
                 printf("MPI_Send (pong stage) unsuccessful\n");
             }
         } else if (a->rank == ping) {
-            if (MPI_Recv(arr, i, MPI_BYTE, pong, tag-j, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+            if (MPI_Recv(arr, i, MPI_BYTE, pong, tag*j, a->comm_w, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
                 printf("MPI_Recv (pong stage) unsuccessful\n");
             }
         }
