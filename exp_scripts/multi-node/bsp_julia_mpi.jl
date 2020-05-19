@@ -58,11 +58,8 @@ end
 
 function do_reads(a)
 
-    #= FOR JULIA VERSION 0.7 OR HIGHER
     mymem     = Array{Int64,1}(undef, a.reads)
-    =#
    
-    mymem     = Array{Int64,1}(a.reads)
     sum       = Float64
     x         = Float64
     i         = Int64
@@ -94,10 +91,7 @@ function do_writes(a)
     x::Float64   = 93.0
     sum::Float64 = x
 
-    #= FOR JULIA VERSION 0.7 OR HIGHER
     mymem     = Array{Int64,1}(undef, a.writes)
-    =#
-    mymem = Array{Int64,1}(a.writes)
 
 
     if a.rank == 0
@@ -141,14 +135,8 @@ end
 function do_commus(a)
    println("do_comms")
 
-    #= FOR JULIA VERSION 0.7 OR HIGHER
     b	      = Array{Int64,1}(undef, a.comms)
-    =#
-    b         = Array{Int64,1}(a.comms)
-    #= FOR JULIA VERSION 0.7 OR HIGHER 
     a1 = Array{Int64,1}(undef, a.comms)
-    =#
-    a1 = Array{Int64,1}(a.comms)
 
     if a.rank == a.size-1
         fwd = 0
