@@ -1,10 +1,8 @@
-
 import MPI
-#= FOR JULIA VERSION 0.7 OR HIGHER
+#FOR JULIA VERSION 0.7 OR HIGHER
 using Distributed
 Distributed.@everywhere include("bsp_julia_mpi.jl")
-=#
-@everywhere include("bsp_julia_mpi.jl")
+#@everywhere include("bsp_julia_mpi.jl")
 
     iters = 100
     elements = 10
