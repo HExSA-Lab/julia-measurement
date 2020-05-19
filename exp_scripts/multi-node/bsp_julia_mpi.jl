@@ -12,11 +12,8 @@ using DocOpt
 include("cli.jl")
 =#
 
-#= FOR JULIA VERSION 0.7 OR HIGHER
+using MPI 
 mutable struct bsptype
-=#
-import MPI 
-type bsptype
     size     :: Int64
     rank     :: Int64
     iters    :: Int64
