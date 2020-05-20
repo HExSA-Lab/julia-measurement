@@ -1,7 +1,9 @@
-using MPI
+
+using  MPI
 using Distributed
-using Revise
-@everywhere includet("bsp_julia_mpi.jl");
+using Revise 
+Distributed.@everywhere includet("bsp_julia_mpi.jl");
+
 
     iters = 100
     elements = 10
@@ -9,5 +11,7 @@ using Revise
     reads = 5000000
     writes = 500000
     comms = 10000
+#    doit(iters,elements, flops, reads, writes,comms)    
     doit_mpi(iters,elements, flops, reads, writes,comms)    
+    println(workers())
     rmprocs(workers())
