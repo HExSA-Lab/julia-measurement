@@ -1,6 +1,4 @@
-#= For Julia version 0.7 or higher 
 using Distributed
-=#
 
 #=
 #!/usr/bin/julia
