@@ -150,9 +150,9 @@ function do_comms(a)
 
     # do the actual communication phase
     for i=1:a.comms
-        MPI.Send(b, fwd, 10, a.comm_world)
+        MPI.Send(b, fwd, 10+i, a.comm_world)
         a1 = Array{Int64,1}(undef, a.comms)
-        MPI.Recv!(a1, bck, 10, a.comm_world)
+        MPI.Recv!(a1, bck, 10+i, a.comm_world)
     end
 
     # wait for everyone to finish
