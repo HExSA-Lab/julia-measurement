@@ -1,6 +1,7 @@
 using MPI
 using Distributed
-@everywhere include("bsp_julia_mpi.jl")
+using Revise
+@everywhere includet("bsp_julia_mpi.jl");
 
     iters = 100
     elements = 10
