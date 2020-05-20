@@ -283,7 +283,7 @@ do_it (int iters,
     DEBUG_PRINT(rank, "Hello world! I am process number: %d on processor %s\n", rank, processorname);
 
     struct bsp_type a = {size, rank, iters, elements, flops, reads, writes, comms, MPI_COMM_WORLD};
-
+    printf("%d",iters) 
     for (j = 0; j < iters; j++) {
 
         do_compute(&a);
