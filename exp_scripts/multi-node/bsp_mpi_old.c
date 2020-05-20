@@ -112,7 +112,7 @@ do_reads (struct bsp_type * a)
     arr = malloc(a->reads*sizeof(int));
     if (!arr) {
         fprintf(stderr, "Could not allocate array\n");
-        return;
+        return -1.1;
     }
     
     if (a->rank == 0){
@@ -121,7 +121,7 @@ do_reads (struct bsp_type * a)
 	    fs = fopen(filename, "a");
         if (!fs) {
             fprintf(stderr, "Could not open file %s in %s\n", filename, __func__);
-            return;
+            return -1.1;
         }
 
 	    clock_gettime(CLOCK_REALTIME, &start);
@@ -143,7 +143,9 @@ do_reads (struct bsp_type * a)
 }
 
 
-static void 
+int * do_writes (struct bsp_type * a) __attribute__((noinline));
+
+__attribute__((noinline)) int *
 do_writes (struct bsp_type * a)
 {
     int i;
@@ -157,7 +159,7 @@ do_writes (struct bsp_type * a)
     arr = malloc(a->writes*sizeof(int));
     if (!arr) {
         fprintf(stderr, "Could not allocate array in %s\n", __func__);
-        return;
+        return 1;
     }
 
     if (a->rank == 0) {
@@ -179,6 +181,7 @@ do_writes (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
+    return arr;
 }
 
 
@@ -186,7 +189,6 @@ static void
 do_comms (struct bsp_type * a)
 {
     int a1;
-    int b;
     int i;
     int neighbor_fwd;
     int neighbor_bck;
@@ -426,7 +428,7 @@ main (int argc, char ** argv)
 
     do_it(iter, elm, flops, reads, writes, comms, rank, size);
 
-    MPI_Finalize();
+    MPI_Abort(MPI_COMM_WORLD, 1);
 
     return 0;
 }
