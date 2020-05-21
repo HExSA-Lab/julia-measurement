@@ -1,4 +1,6 @@
 import MPI
+using Profile
+using PProf 
 
 mutable struct bsptype
     size::Int64
@@ -6,7 +8,6 @@ mutable struct bsptype
     iters::Int64
     comm_world
 end
-
 function do_ping_pong(a)
     ping = 0
     pong = 1
@@ -20,7 +21,7 @@ function do_ping_pong(a)
             file_suffix = "_"*string(i)*".dat"
             fs = open("comms_size"*file_suffix, "a")
         end
-        arr=Array{Int8,1}(i)
+        arr=Array{Int8,1}(undef,i)
 
         if a.rank ==ping
 
@@ -58,7 +59,6 @@ function do_ping_pong(a)
     
     end
 end
-
 function doit_mpi(iters, throwout)
    
     MPI.Init()
@@ -69,6 +69,10 @@ function doit_mpi(iters, throwout)
     a = bsptype(size, rank, iters, bspcomm)
     
     for i=1:iters+throwout
+	if i ==1 
+		@profile do_ping_pong(a)
+		pprof(web=true)
+	end
 	do_ping_pong(a)
 	print("iteration-->",i)
     end
