@@ -32,7 +32,7 @@ function do_ping_pong(a)
         #PING
 
         if a.rank == ping
-            MPI.Send(arr, pong, 10, a.comm_world)
+            @profile MPI.Send(arr, pong, 10, a.comm_world)
         else
             MPI.Recv!(arr, ping, 10, a.comm_world)
         end
@@ -69,10 +69,10 @@ function doit_mpi(iters, throwout)
     a = bsptype(size, rank, iters, bspcomm)
     
     for i=1:iters+throwout
-	if i ==1 
-		@profile do_ping_pong(a)
-		pprof(web=true)
-	end
+#	if i ==1 
+#		@profile do_ping_pong(a)
+#		pprof(web=true)
+#	end
 	do_ping_pong(a)
 	print("iteration-->",i)
     end
