@@ -1,5 +1,7 @@
 import MPI
-@everywhere include("pp_julia_mpi.jl")
+using Distributed 
+using Revise 
+Distributed.@everywhere includet("pp_julia_mpi.jl")
 
     throwout = 10
     iters = 100
