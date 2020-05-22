@@ -9,7 +9,7 @@ mutable struct bsptype
     iters::Int64
     comm_world
 end
-#=
+
 const MYCOMMWORLD = Cint(1140850688)
 function MySend(buf::Array{Int8}, cnt::Cint, dst::Cint, tag::Cint, comm::Cint)
 	ccall((:MPI_Send, "libmpich"), Cint, 
@@ -36,7 +36,7 @@ function MyRecv(buf::Array{Int8}, cnt::Cint, src::Cint, tag::Cint, comm::Cint)
 				   stat_ref)
 	return stat_ref[]
 end
-=#
+
 
 function do_ping_pong(a)
     ping = 0
@@ -58,22 +58,7 @@ function do_ping_pong(a)
               start = time_ns()
 
         end
-	 #PING
 
-        if a.rank == ping
-            @profile MPI.Send(arr, pong, 10, a.comm_world)
-        else
-            MPI.Recv!(arr, ping, 10, a.comm_world)
-        end
-
-        #PONG
-
-        if a.rank== pong
-            MPI.Send(arr, ping, 10, a.comm_world)
-        else
-            MPI.Recv!(arr, pong, 10, a.comm_world)
-        endi
-#=
         #PING
 
         if a.rank == ping
@@ -90,7 +75,7 @@ function do_ping_pong(a)
         else
             MyRecv(arr, Base.cconvert(Cint, length(arr)), Base.cconvert(Cint, pong), Cint(10), MYCOMMWORLD)
         end
-=#
+
         if a.rank == ping
 
             # end timer print out result

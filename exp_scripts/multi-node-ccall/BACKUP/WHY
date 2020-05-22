@@ -1,0 +1,5 @@
+Because everytime HEXSA and amalrizv branches are merged I lose changes in the merge.
+This directory works.
+
+All addresses in .sh files still are named for julia-measurement/exp_scripts/multi-node.
+Run these after copying there or change directory names.
