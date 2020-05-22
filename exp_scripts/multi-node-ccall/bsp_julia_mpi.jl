@@ -1,4 +1,5 @@
 using Distributed
+import MPI: Status
 #=
 #!/usr/bin/julia
 
@@ -20,6 +21,33 @@ mutable struct bsptype
     comm_world
 end
 
+
+const MYCOMMWORLD = Cint(1140850688)
+function MySend(buf::Array{Int8}, cnt::Cint, dst::Cint, tag::Cint, comm::Cint)
+	ccall((:MPI_Send, "libmpich"), Cint, 
+				   (Ptr{Cchar}, Cint, Cint, Cint, Cint, Cint),
+				   Base.cconvert(Ptr{Cchar}, buf), 
+				   cnt,
+				   Cint(1275068673),
+				   dst,
+				   tag,
+				   comm)
+	return nothing
+end
+
+function MyRecv(buf::Array{Int8}, cnt::Cint, src::Cint, tag::Cint, comm::Cint)
+	stat_ref = Ref{Status}(MPI.STATUS_EMPTY)
+	ccall((:MPI_Recv, "libmpich"), Cint, 
+				   (Ptr{Cchar}, Cint, Cint, Cint, Cint, Cint, Ptr{Status}),
+				   Base.cconvert(Ptr{Cchar}, buf), 
+				   cnt,
+				   Cint(1275068673),
+				   src,
+				   tag,
+				   comm,
+				   stat_ref)
+	return stat_ref[]
+end
 function do_flops(a)
 
     i          = Int64
@@ -150,9 +178,11 @@ function do_comms(a)
 
     # do the actual communication phase
     for i=1:a.comms
-        MPI.Send(b, fwd, 10+i, a.comm_world)
-        a1 = Array{Int64,1}(undef, a.comms)
-        MPI.Recv!(a1, bck, 10+i, a.comm_world)
+        #MPI.Send(b, fwd, 10+i, a.comm_world)
+        MySend(b, Base.cconvert(Cint, length(b)), Base.cconvert(Cint, fwd), Cint(10+i), MYCOMMWORLD)
+	a1 = Array{Int64,1}(undef, a.comms)
+#        MPI.Recv!(a1, bck, 10+i, a.comm_world)
+        MyRecv(a1, Base.cconvert(Cint, length(a1)), Base.cconvert(Cint, bck), Cint(10+i), MYCOMMWORLD)
     end
 
     # wait for everyone to finish
