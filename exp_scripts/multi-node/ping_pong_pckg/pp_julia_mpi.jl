@@ -72,7 +72,7 @@ function do_ping_pong(a)
             MPI.Send(arr, ping, 10, a.comm_world)
         else
             MPI.Recv!(arr, pong, 10, a.comm_world)
-        endi
+        end
 #=
         #PING
 
