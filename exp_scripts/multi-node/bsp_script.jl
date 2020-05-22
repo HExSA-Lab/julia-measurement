@@ -11,7 +11,7 @@ Distributed.@everywhere includet("bsp_julia_mpi.jl");
     flops = 1000000
     reads = 500000
     writes = 500000
-    comms = 10
+    comms = 500
 
 #    doit(iters,elements, flops, reads, writes,comms)    
     doit_mpi(iters,elements, flops, reads, writes,comms)    
