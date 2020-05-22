@@ -181,7 +181,7 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
     for i=1:iters
     	do_computes(a)
 
-        print("iteration-->",i)
+#        print("iteration-->",i)
     #	if size==16
     #		do_ping_pong(a)
     #	end
@@ -189,8 +189,8 @@ function doit_mpi(iters, elements, flops, reads, writes, comms)
         do_comms(a)
     end
 
-    println("About to finalize")
-    MPI.Abort(bspcomm, 0)
+ #   println("About to finalize")
+    MPI.Finalize()
 
 end
 #=
