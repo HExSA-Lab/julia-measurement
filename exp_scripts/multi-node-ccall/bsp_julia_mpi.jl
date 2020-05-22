@@ -23,7 +23,7 @@ end
 
 
 const MYCOMMWORLD = Cint(1140850688)
-function MySend(buf::Array{Int8}, cnt::Cint, dst::Cint, tag::Cint, comm::Cint)
+function MySend(buf::Array{Int64}, cnt::Cint, dst::Cint, tag::Cint, comm::Cint)
 	ccall((:MPI_Send, "libmpich"), Cint, 
 				   (Ptr{Cchar}, Cint, Cint, Cint, Cint, Cint),
 				   Base.cconvert(Ptr{Cchar}, buf), 
@@ -35,7 +35,7 @@ function MySend(buf::Array{Int8}, cnt::Cint, dst::Cint, tag::Cint, comm::Cint)
 	return nothing
 end
 
-function MyRecv(buf::Array{Int8}, cnt::Cint, src::Cint, tag::Cint, comm::Cint)
+function MyRecv(buf::Array{Int64}, cnt::Cint, src::Cint, tag::Cint, comm::Cint)
 	stat_ref = Ref{Status}(MPI.STATUS_EMPTY)
 	ccall((:MPI_Recv, "libmpich"), Cint, 
 				   (Ptr{Cchar}, Cint, Cint, Cint, Cint, Cint, Ptr{Status}),
