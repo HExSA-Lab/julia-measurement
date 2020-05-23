@@ -31,7 +31,7 @@ def lineplot_files(fnames, xlabels,  yaxis):
         data_stds.append(temp_std)
 
     ax, fig = plt.subplots(1, figsize=(3.5,6))
-    ax = plt.bar(data_pos, data_means, yerr=data_stds, align='edge',capsize=10, width=0.2, color=color)
+    ax = plt.bar(data_pos, data_means, yerr=data_stds, align='center',capsize=10, width=0.2, color=color)
 
     plt.xticks(data_pos, xlabels, rotation=30)
     plt.ylabel(yaxis)
