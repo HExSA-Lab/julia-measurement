@@ -13,7 +13,7 @@ ping-pong: data/pingpong/c_and_julia/* data/pingpong/c_and_julia_opt/* pingpong_
 spawn-fetch: data/spawn-fetch/spawn_fetch.csv spawn_fetch_grouped_bar.py
 	python3 ./spawn_fetch_grouped_bar.py
 
-cond-plot: data/condvar/*.dat cond_plot.py
+condvars: data/condvar/*.dat cond_plot.py
 	python3 ./cond_plot.py
 
 clean:
