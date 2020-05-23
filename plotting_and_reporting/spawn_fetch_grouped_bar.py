@@ -10,10 +10,9 @@ barwidth = 0.1
 # make hatches less annoyingly thick
 mpl.rcParams['hatch.linewidth'] = 0.25
 
-# er
 mpl.rcParams["errorbar.capsize"] = 2
 
-df = pd.read_csv('spawn_fetch_new_out.csv', comment='#')
+df = pd.read_csv('data/spawn-fetch/spawn_fetch.csv', comment='#')
 
 procs      = df.proc.unique()
 task_sizes = df.leg_obj.unique()

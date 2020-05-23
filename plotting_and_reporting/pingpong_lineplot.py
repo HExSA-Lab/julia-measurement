@@ -74,9 +74,9 @@ plt.xticks(xpos, xlabels, rotation=30)
 plt.xlabel(XLABEL)
 plt.ylabel("Latency (ms)")
 
-plot_pingpong_lineplot(xpos, "raw_dat_files", "c", 'C+MPI', '-', 'None', 'lat')
-plot_pingpong_lineplot(xpos, "raw_dat_files", "julia", 'Julia+MPI', '-.', 'o', 'lat')
-plot_pingpong_lineplot(xpos, "raw_dat_files_opt", "julia", 'Julia+MPI (opt)', '--', 'x', 'lat')
+plot_pingpong_lineplot(xpos, "data/pingpong/c_and_julia", "c", 'C+MPI', '-', 'None', 'lat')
+plot_pingpong_lineplot(xpos, "data/pingpong/c_and_julia", "julia", 'Julia+MPI', '-.', 'o', 'lat')
+plot_pingpong_lineplot(xpos, "data/pingpong/c_and_julia", "julia", 'Julia+MPI (opt)', '--', 'x', 'lat')
 
 # Throughput plot
 plt.subplot(212)
@@ -84,9 +84,9 @@ plt.xticks(xpos, xlabels, rotation=30)
 plt.xlabel(XLABEL)
 plt.ylabel("Throughput (Bytes/s)")
 
-plot_pingpong_lineplot(xpos, "raw_dat_files", "c", 'C+MPI', '-', 'None', 'tput')
-plot_pingpong_lineplot(xpos, "raw_dat_files", "julia", 'Julia+MPI', '-.', 'o', 'tput')
-plot_pingpong_lineplot(xpos, "raw_dat_files_opt", "julia", 'Julia+MPI (opt)', '--', 'x', 'tput')
+plot_pingpong_lineplot(xpos, "data/pingpong/c_and_julia_opt", "c", 'C+MPI', '-', 'None', 'tput')
+plot_pingpong_lineplot(xpos, "data/pingpong/c_and_julia_opt", "julia", 'Julia+MPI', '-.', 'o', 'tput')
+plot_pingpong_lineplot(xpos, "data/pingpong/c_and_julia_opt", "julia", 'Julia+MPI (opt)', '--', 'x', 'tput')
 
 plt.tight_layout()
 plt.savefig("pingpong.pdf")
