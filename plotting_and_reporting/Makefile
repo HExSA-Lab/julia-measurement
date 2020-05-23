@@ -1,5 +1,5 @@
 
-all: context-switches task-creations spawn-fetch ping-pong
+all: context-switches task-creations spawn-fetch ping-pong cond-plot
 
 context-switches: data/context-switches/julia_ctx_switch.dat data/context-switches/c_ctx_switch.dat context_switch_plot.py
 	python3 ./context_switch_plot.py
@@ -12,6 +12,9 @@ ping-pong: data/pingpong/c_and_julia/* data/pingpong/c_and_julia_opt/* pingpong_
 
 spawn-fetch: data/spawn-fetch/spawn_fetch.csv spawn_fetch_grouped_bar.py
 	python3 ./spawn_fetch_grouped_bar.py
+
+cond-plot: data/condvar/*.dat cond_plot.py
+	python3 ./cond_plot.py
 
 clean:
 	@rm -f *.pdf
