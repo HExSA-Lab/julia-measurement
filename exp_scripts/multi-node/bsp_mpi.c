@@ -112,7 +112,7 @@ do_reads (struct bsp_type * a)
     arr = malloc(a->reads*sizeof(int));
     if (!arr) {
         fprintf(stderr, "Could not allocate array\n");
-        return -1.1;
+        return;
     }
     
     if (a->rank == 0){
@@ -121,7 +121,7 @@ do_reads (struct bsp_type * a)
 	    fs = fopen(filename, "a");
         if (!fs) {
             fprintf(stderr, "Could not open file %s in %s\n", filename, __func__);
-            return -1.1;
+            return;
         }
 
 	    clock_gettime(CLOCK_REALTIME, &start);
@@ -143,9 +143,7 @@ do_reads (struct bsp_type * a)
 }
 
 
-int * do_writes (struct bsp_type * a) __attribute__((noinline));
-
-__attribute__((noinline)) int *
+static void 
 do_writes (struct bsp_type * a)
 {
     int i;
@@ -159,7 +157,7 @@ do_writes (struct bsp_type * a)
     arr = malloc(a->writes*sizeof(int));
     if (!arr) {
         fprintf(stderr, "Could not allocate array in %s\n", __func__);
-        return 1;
+        return;
     }
 
     if (a->rank == 0) {
@@ -181,7 +179,6 @@ do_writes (struct bsp_type * a)
 	    fprintf(fs,"%lu\n", e_ns - s_ns);
 	    fclose(fs);
     }
-    return arr;
 }
 
 
@@ -189,6 +186,7 @@ static void
 do_comms (struct bsp_type * a)
 {
     int a1;
+    int b;
     int i;
     int neighbor_fwd;
     int neighbor_bck;
@@ -285,7 +283,6 @@ do_it (int iters,
     DEBUG_PRINT(rank, "Hello world! I am process number: %d on processor %s\n", rank, processorname);
 
     struct bsp_type a = {size, rank, iters, elements, flops, reads, writes, comms, MPI_COMM_WORLD};
-
     for (j = 0; j < iters; j++) {
 
         do_compute(&a);
@@ -428,7 +425,7 @@ main (int argc, char ** argv)
 
     do_it(iter, elm, flops, reads, writes, comms, rank, size);
 
-    MPI_Abort(MPI_COMM_WORLD, 1);
+    MPI_Finalize();
 
     return 0;
 }
